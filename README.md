@@ -1,2 +1,2 @@
-# denorm
+# Denorm
 SQL ORM for Deno
