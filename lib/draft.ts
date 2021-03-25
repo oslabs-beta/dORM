@@ -1,5 +1,8 @@
+/**
+ * DATABASE MODEL----------------------------------------------------------
+ */
 import { Client, Pool, PoolClient } from '../deps.ts';
-import { template } from './sql-template.ts';
+// import { template } from './sql-template.ts';
 
 const config =
   'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
@@ -7,73 +10,128 @@ const config =
 const pool = new Pool(config, 3);
 
 /**
- * QUERY BUILDER
+ * QUERY BUILDER------------------------------------------------------------
  */
-
-interface info {
-  method: null | string;
-  select: null | string;
-  delete: null | string;
-  insert: null | string;
-  update: null | string;
-  from: null | string;
-  where: null | string;
-  str: null | string;
+interface Info {
+  action: {
+    type: string;
+    table: null | string;
+    columns: null | string | string[];
+    values: null | string | string[];
+  };
+  filter: {
+    where: boolean;
+    // column: null | string;
+    // operator: null | string;
+    // value: null | string | number;
+    condition: null | string;
+  };
 }
 
 class Dorm {
-  info: info = {
-    method: null,
-    select: null,
-    from: null,
-    where: null,
-    delete: null,
-    str: null,
-  };
+  info: Info;
+
+  constructor() {
+    this.info = {
+      action: {
+        type: '',
+        table: null,
+        columns: null,
+        values: null,
+      },
+      filter: {
+        where: false,
+        // column: null,
+        // operator: null,
+        // value: null,
+        condition: null,
+      },
+    };
+  }
 
   error() {
     throw 'error';
   }
 
   select(arg: string) {
-    this.info.select = arg;
+    if (this.info.action.type) throw 'error';
+    this.info.action.type = 'SELECT';
+    this.info.action.columns = arg;
     return this;
   }
 
-  from(arg: string) {
-    this.info.from = arg;
+  table(arg: string) {
+    this.info.action.table = arg;
     return this;
   }
 
-  then(arg: string) {
-    let result: string;
-    for (const status of info) {
-      if (info[status]) {
-        result.concat(status);
-        result.concat(info[status]);
+  from = this.table;
+
+  where(arg: string) {
+    this.info.filter.where = true;
+    this.info.filter.condition = arg;
+    return this;
+  }
+
+  async then(callback: (arg: unknown) => unknown): Promise<unknown> {
+    const action = this.info.action.type;
+    const filter = this.info.filter.where;
+    //if(!action){throw new Error}
+
+    let queryTemplate = template(action)!;
+    if (filter) queryTemplate = queryTemplate.concat(` ${template('WHERE')}`);
+
+    const result = await this.query(queryTemplate);
+
+    const promise = new Promise<unknown>((resolve, reject) => {
+      try {
+        resolve(callback(result));
+      } catch (e) {
+        reject(e);
       }
-    }
+    });
 
-    return result;
+    return promise;
   }
 
-  public async query(str: string) {
+  async query(str: string) {
     // queries DB
     const client: PoolClient = await pool.connect();
-    const dbResult = await client.queryObject(str);
+    const dbResult = client.queryObject(str);
     client.release();
-    return dbResult;
+    return dbResult; // promise object
   }
 }
 
 const dorm = new Dorm();
 
+/**
+ *  TEMPLATE ----------------------------------------------------------------
+ */
+function template(type: string) {
+  switch (type) {
+    case 'SELECT':
+      return `SELECT ${dorm.info.action.columns} FROM ${dorm.info.action.table}`;
+    case 'WHERE':
+      return `WHERE ${dorm.info.filter.condition}`; //${dorm.info.filter.column} ${dorm.info.filter.operator} ${dorm.info.filter.value}`;
+    default:
+      return;
+  }
+}
+
+/**
+ * USER------------------------------------------------------------------------
+ */
 const testQuery = await dorm
   .select('*')
   .from('people')
-  .then((res) => console.log(res.rows));
-
-console.log(
-  'My Test Query:',
-  testQuery //.executeQuery('SELECT * FROM people')
-);
+  .where('_id = 1')
+  .then((data: any) => {
+    console.log('first then');
+    return data.rows[0];
+  })
+  .then((data) => {
+    console.log('promise then: ', data);
+    return data;
+  });
+console.log('My Test Query:', testQuery);

@@ -9,7 +9,6 @@ const pool = new Pool(config, 3);
 /**
  * QUERY BUILDER------------------------------------------------------------
  */
-
 interface Info {
   action: {
     type: string;
@@ -24,6 +23,10 @@ interface Info {
     // value: null | string | number;
     condition: null | string;
   };
+  returning: {
+    active: boolean;
+    columns: string | string[];
+  };
 }
 
 class Dorm {
@@ -34,7 +37,7 @@ class Dorm {
       action: {
         type: '',
         table: null,
-        columns: null,
+        columns: '*',
         values: null,
       },
       filter: {
@@ -44,6 +47,10 @@ class Dorm {
         // value: null,
         condition: null,
       },
+      returning: {
+        active: false,
+        columns: '*',
+      },
     };
   }
 
@@ -51,10 +58,15 @@ class Dorm {
     throw 'error';
   }
 
-  select(arg: string) {
+  select(arg?: string) {
     if (this.info.action.type) throw 'error';
     this.info.action.type = 'SELECT';
-    this.info.action.columns = arg;
+    if (arg) this.info.action.columns = arg;
+    return this;
+  }
+
+  delete() {
+    this.info.action.type = 'DELETE';
     return this;
   }
 
@@ -71,15 +83,45 @@ class Dorm {
     return this;
   }
 
+  returning(arg?: string) {
+    this.info.returning.active = true;
+    if (arg) this.info.returning.columns = arg;
+    return this;
+  }
+
   async then(callback: (data: unknown) => unknown) {
     const action = this.info.action.type;
     const filter = this.info.filter.where;
-    //if(!action){throw new Error}
+    const returning = this.info.returning.active;
 
     let queryTemplate = template(action)!;
-    if (filter) queryTemplate = queryTemplate.concat(` ${template('WHERE')}`);
+    if (filter) queryTemplate += ` ${template('WHERE')}`;
+    if (returning) queryTemplate += ` ${template('RETURNING')}`;
+
+    console.log('QUERY STRING: ', queryTemplate);
 
     const result = await this.query(queryTemplate);
+
+    // clear info future function
+    this.info = {
+      action: {
+        type: '',
+        table: null,
+        columns: '*',
+        values: null,
+      },
+      filter: {
+        where: false,
+        // column: null,
+        // operator: null,
+        // value: null,
+        condition: null,
+      },
+      returning: {
+        active: false,
+        columns: '*',
+      },
+    };
 
     const promise = new Promise((resolve, reject) => {
       resolve(callback(result));
@@ -91,13 +133,13 @@ class Dorm {
   async query(str: string) {
     // queries DB
     const client: PoolClient = await pool.connect();
-    const dbResult = await client.queryObject(str);
+    const dbResult = client.queryObject(str);
     client.release();
-    return dbResult;
+    return dbResult; // promise object
   }
 }
 
-const dorm = new Dorm();
+export const dorm = new Dorm();
 
 /**
  *  TEMPLATE ----------------------------------------------------------------
@@ -105,95 +147,17 @@ const dorm = new Dorm();
 // interface Template {
 //   [propName: string]: string;
 // }
-
 function template(type: string) {
   switch (type) {
     case 'SELECT':
       return `SELECT ${dorm.info.action.columns} FROM ${dorm.info.action.table}`;
     case 'WHERE':
       return `WHERE ${dorm.info.filter.condition}`; //${dorm.info.filter.column} ${dorm.info.filter.operator} ${dorm.info.filter.value}`;
+    case 'DELETE':
+      return `DELETE FROM ${dorm.info.action.table}`;
+    case 'RETURNING':
+      return `RETURNING ${dorm.info.returning.columns}`;
     default:
     // return;
   }
 }
-/**
- * USER------------------------------------------------------------------------
- */
-
-const testQuery = await dorm
-  .select('*')
-  .from('people')
-  .where('_id = 1')
-  // .and('name = HanDump')  // SELECT * FROM "public"."people" WHERE (hair_color = 'none' OR hair_color = 'blond') AND height > 180 AND NOT eye_color = 'red'
-  // .or('_id != 3')
-  .then((data) => {
-    console.log('first then');
-    return 'FIRST PROMISE RESULT';
-  })
-  .then((data) => {
-    console.log('promise then: ', data);
-  });
-// .then((output) => output.rows[0]);
-// console.log('My Test Query:', testQuery);
-
-// example template:
-
-// // SELECT
-// BASE SELECT QUERY: `SELECT ${columns} FROM ${primaryTable}`
-
-// // JOINS CLAUSE: `${joinType} ${secondaryTable}`
-
-// // ON CLAUSE: `ON ${primaryColumnName} ${operator} ${secondaryColumnName}`
-
-// operator.toUpperCase()
-// WHERE CLAUSE:`WHERE ${columnName} ${operator} ${value}`
-
-// // GROUP BY CLAUSE:
-
-// // ORDER BY CLAUSE:
-
-// // DELETE
-// BASE DELETE QUERY: `DELETE FROM ${table}`
-
-// WHERE CLAUSE: `WHERE ${columnName} ${operator} ${value}`
-
-// RETURNING CLASE: `RETURNING ${columns}`
-
-// DROP QUERY: `DROP TABLE ${table}`
-
-// // INSERT
-// INSERT QUERY: `INSERT INTO ${table} (${columns}) VALUES (${values})`
-
-// RETURNING CLAUSE: `RETURNING ${columns}`
-
-// dorm.insert(123 or [values] or {column:value}).into(table)
-
-// // UPDATE
-// UPDATE QUERY: `UPDATE ${table} SET ${columns} = ${values}` // UPDATE table1 SET column1 = value1, column2 = value2, column3 = value3
-// //set {(column1, column2, column3) = (value1, value2, value3)}
-
-// WHERE CLAUSE: `WHERE ${columnName} ${operator} ${value}`
-
-// RETURNING CLAUSE: `RETURNING ${columns}`
-
-// dorm.update()
-
-// switch
-// case:
-// case:
-
-// dorm.select(column).from(table).then((res) => console.log(res))
-
-// function then(func) {
-//   // we need to figure out what is the final query is by looking at the action type
-
-//   // So what is the action type?
-//   let action = this.info.ACTION.type
-//   let filter = this.info.FILTER.type
-//   let actionTemplate = template[action] // => SELECT
-// }
-
-// info:info {
-//   ACTION: {type: SELECT, INSERT, DELETE, DROP, UPDATE, table: tablename, columns: columns, values: values},
-//   FILTER: {type: WHERE, columns: columns, operator: operator, values: values}
-// }
