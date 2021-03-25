@@ -14,7 +14,7 @@ interface Info {
     type: null | string;
     table: null | string;
     columns: null | string | string[];
-    values: null | string | string[];
+    values: string;
   };
   filter: {
     where: boolean;
@@ -29,6 +29,10 @@ interface Info {
   };
 }
 
+interface Callback {
+  (key: unknown): unknown;
+}
+
 class Dorm {
   info: Info;
 
@@ -38,7 +42,7 @@ class Dorm {
         type: null,
         table: null,
         columns: '*',
-        values: null,
+        values: '',
       },
       filter: {
         where: false,
@@ -58,60 +62,109 @@ class Dorm {
     throw 'error';
   }
 
-  insert(...arg: unknown[]) {
+  // insert(arg: unknown[]) {
+  //   this.info.action.type = 'INSERT';
+  //   // insert([{column1:value1, column2:value2},{column1:value3, column2:value4}])
+  //   const columns: string[] = [];
+  //   const values: unknown[] = [];
+  //   arg.forEach((obj: any) => {
+  //     Object.entries(obj).forEach((arr) => {
+  //       columns.push(arr[0]);
+  //       values.push(arr[1]);
+  //     });
+  //   });
+  //   console.log('columns', columns);
+  //   console.log('values:', values);
+  //   return this;
+  // }
+
+  // dorm.insert([{name: 'han', species: 'snake'}, {name: 'hanji', species: 'human', age: 50}, {height: 5, age: 10}])
+  // column = [column1, column2, column3]
+  // column = new Set() // [name, species, age, height]
+  // [('han, 'snake', null, null), ('hanji', human, 50, null), (null, null, 50, 5)]
+  //INSERT INTO table1 (name,species, age, eyes) VALUES (han, alien, 99)(myo, null, null, yes)
+
+  insert(arg: unknown[]) {
     this.info.action.type = 'INSERT';
+    // insert([{column1:value1, column2:value2},{column1:value3, column2:value4}])
 
-    // IF arg is an Object
+    const columns: string[] = [];
 
-    // IF arg is an array
+    const values: unknown[] = [];
 
-    // IF arg is an nested array
+    arg.forEach((obj: any) => {
+      Object.keys(obj).forEach((col) => {
+        if (!columns.includes(col)) columns.push(col);
+      });
+    });
 
-    // IF arg is a single value
+    arg.forEach((obj: any) => {
+      const vals: any = [];
+      columns.forEach((col) => {
+        if (obj[col] === undefined) {
+          vals.push('null');
+        } else if (typeof obj[col] === 'string') {
+          vals.push(`'${obj[col]}'`);
+        } else {
+          vals.push(obj[col]);
+        }
+        // vals.push(obj[col] || 'null');
+      });
+      values.push(vals);
+    });
 
-    if (Array.isArray(arg)) {
-      for (let ele of arg) {
-      }
-    }
+    console.log('columns', columns);
+    console.log('values:', values);
+
+    this.info.action.columns = columns.join(', ');
+
+    values.forEach((data: any, index: number) => {
+      const tail = index === values.length - 1 ? '' : ', ';
+      this.info.action.values += `(${data.join(', ')})${tail}`;
+    });
+
     return this;
   }
 
-  // {id: 1, name: han}
-
-  // {id: 2, name: hanji}
-
-  //insert('hansolo')
-  //insert('hansolo', 'handouble', 'hantriple')
-  //insert(['hansolo', 'handouble', 'hantriple'])
-  //insert([{column:value},{column:value2}])
-  //insert({column:value},{column:value2});
-
-  // {0:{promotion_name: 2019 Summer Promotion,
-  // discount: 0.15},1:{
-
-  // }}
-
   /*
-  INSERT INTO sales.promotions (
-    promotion_name,
-    discount,
-    start_date,
-    expired_date
-)
-VALUES
-    (
-        '2019 Summer Promotion',
-        0.15,
-        '20190601',
-        '20190901'
-    ),
-    (
-        '2019 Fall Promotion',
-        0.20,
-        '20191001',
-        '20191101'
-    ),
-*/
+  for(const input of arg){
+    for(const properties of input){
+      this.info.action.columns_2[properties] = {}
+    }
+  }
+  this.info = {
+    action: {
+      type: null,
+      table: null,
+      columns_1: {
+        index:3
+        name: [han], -> [han,hanji,null] 
+        species:[alien], -> [alien, null,ull]
+        age:[99], -> [99, 120,null]
+        height:[null], -> [null, 170, null]
+        gender:new Array(3).fill(null), ->[null,null,male]
+      }
+      columns_2: {
+        name: {'0': 'han', '1': 'hanji'}
+        species:{'1':'human'}
+        age:{'1': 50, '2': '10'}
+        height:{'2': '5'}
+      }
+      values: null,
+    },
+    filter: {
+      where: false,
+      // column: null,
+      // operator: null,
+      // value: null,
+      condition: null,
+    },
+    returning: {
+      active: false,
+      columns: '*',
+    },
+  };
+  */
 
   select(arg?: string) {
     this.info.action.type = 'SELECT';
@@ -156,7 +209,7 @@ VALUES
   //   await throw
   // }
 
-  async then(callback: (data: unknown) => unknown) {
+  async then(callback: Callback) {
     const action = this.info.action.type;
     const filter = this.info.filter.where;
     const returning = this.info.returning.active;
@@ -176,7 +229,7 @@ VALUES
         type: null,
         table: null,
         columns: '*',
-        values: null,
+        values: '',
       },
       filter: {
         where: false,
@@ -220,9 +273,7 @@ export const dorm = new Dorm();
 /**
  *  TEMPLATE ----------------------------------------------------------------
  */
-// interface Template {
-//   [propName: string]: string;
-// }
+
 function template(type: string): string {
   switch (type) {
     case 'SELECT':
@@ -232,7 +283,8 @@ function template(type: string): string {
     case 'DROP':
       return `DROP TABLE ${dorm.info.action.table}`;
     case 'INSERT':
-      return `INSERT INTO ${dorm.info.action.table} (${dorm.info.action.columns}) VALUES (${dorm.info.action.values})`;
+      // do logic in here for values result = [(),(),()]
+      return `INSERT INTO ${dorm.info.action.table} (${dorm.info.action.columns}) VALUES ${dorm.info.action.values}`;
     case 'WHERE':
       return `WHERE ${dorm.info.filter.condition}`; //${dorm.info.filter.column} ${dorm.info.filter.operator} ${dorm.info.filter.value}`;
     case 'RETURNING':
@@ -259,11 +311,21 @@ function template(type: string): string {
 //   });
 
 const testQuery = await dorm
-  .select()
-  .table('people')
+  .insert([
+    { name: 'hantest2', gender: 'male' },
+    { name: 'hanjitest2', hair_color: 'sexy' },
+    {
+      hair_color: 'tits',
+      eye_color: 'rainbow',
+      name: 'nicktest2',
+      height: 99,
+    },
+  ])
+  .from('people')
+  .returning()
   .then((data: any) => {
     console.log('Our then');
-    return data.rows[0];
+    return data.rows;
   })
   .then((data) => {
     console.log('Bult-in then: ', data);
