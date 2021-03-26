@@ -1,3 +1,11 @@
+// PROBLEMS TO SOLVE:
+
+// JOINS IN SELECT
+
+// UNDEFINED VALUE IN UPDATE
+
+// ERROR HANDLING IN CHAIN
+
 // interface Template {
 //   [propName: string]: string;
 // }
@@ -40,6 +48,7 @@
 // dorm.insert(123 or [values] or {column:value}).into(table)
 
 // // UPDATE
+
 // UPDATE QUERY: `UPDATE ${table} SET ${columns} = ${values}` // UPDATE table1 SET column1 = value1, column2 = value2, column3 = value3
 // //set {(column1, column2, column3) = (value1, value2, value3)}
 

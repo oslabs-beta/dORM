@@ -18,9 +18,6 @@ interface Info {
   };
   filter: {
     where: boolean;
-    // column: null | string;
-    // operator: null | string;
-    // value: null | string | number;
     condition: null | string;
   };
   returning: {
@@ -46,9 +43,6 @@ class Dorm {
       },
       filter: {
         where: false,
-        // column: null,
-        // operator: null,
-        // value: null,
         condition: null,
       },
       returning: {
@@ -62,31 +56,8 @@ class Dorm {
     throw 'error';
   }
 
-  // insert(arg: unknown[]) {
-  //   this.info.action.type = 'INSERT';
-  //   // insert([{column1:value1, column2:value2},{column1:value3, column2:value4}])
-  //   const columns: string[] = [];
-  //   const values: unknown[] = [];
-  //   arg.forEach((obj: any) => {
-  //     Object.entries(obj).forEach((arr) => {
-  //       columns.push(arr[0]);
-  //       values.push(arr[1]);
-  //     });
-  //   });
-  //   console.log('columns', columns);
-  //   console.log('values:', values);
-  //   return this;
-  // }
-
-  // dorm.insert([{name: 'han', species: 'snake'}, {name: 'hanji', species: 'human', age: 50}, {height: 5, age: 10}])
-  // column = [column1, column2, column3]
-  // column = new Set() // [name, species, age, height]
-  // [('han, 'snake', null, null), ('hanji', human, 50, null), (null, null, 50, 5)]
-  //INSERT INTO table1 (name,species, age, eyes) VALUES (han, alien, 99)(myo, null, null, yes)
-
   insert(arg: unknown[]) {
     this.info.action.type = 'INSERT';
-    // insert([{column1:value1, column2:value2},{column1:value3, column2:value4}])
 
     const columns: string[] = [];
 
@@ -108,13 +79,9 @@ class Dorm {
         } else {
           vals.push(obj[col]);
         }
-        // vals.push(obj[col] || 'null');
       });
       values.push(vals);
     });
-
-    console.log('columns', columns);
-    console.log('values:', values);
 
     this.info.action.columns = columns.join(', ');
 
@@ -126,49 +93,29 @@ class Dorm {
     return this;
   }
 
-  /*
-  for(const input of arg){
-    for(const properties of input){
-      this.info.action.columns_2[properties] = {}
-    }
-  }
-  this.info = {
-    action: {
-      type: null,
-      table: null,
-      columns_1: {
-        index:3
-        name: [han], -> [han,hanji,null] 
-        species:[alien], -> [alien, null,ull]
-        age:[99], -> [99, 120,null]
-        height:[null], -> [null, 170, null]
-        gender:new Array(3).fill(null), ->[null,null,male]
-      }
-      columns_2: {
-        name: {'0': 'han', '1': 'hanji'}
-        species:{'1':'human'}
-        age:{'1': 50, '2': '10'}
-        height:{'2': '5'}
-      }
-      values: null,
-    },
-    filter: {
-      where: false,
-      // column: null,
-      // operator: null,
-      // value: null,
-      condition: null,
-    },
-    returning: {
-      active: false,
-      columns: '*',
-    },
-  };
-  */
-
   select(arg?: string) {
     this.info.action.type = 'SELECT';
     if (arg) this.info.action.columns = arg;
+    return this;
+  }
+
+  update(obj: any) {
+    // IMPLEMENT UPDATE
+    this.info.action.type = 'UPDATE';
+    this.info.action.columns = '';
+    // coulmns and values into info
+
+    Object.keys(obj).forEach((col, index) => {
+      let str = `${col} = `;
+      // what about undefined value?
+      if (typeof obj[col] === 'string') {
+        str += `'${obj[col]}'`; // string
+      } else {
+        str += `${obj[col]}`; // number, null, boolean
+      }
+      const tail = index === Object.keys(obj).length - 1 ? '' : ', ';
+      this.info.action.columns += `${str + tail}`;
+    });
     return this;
   }
 
@@ -205,10 +152,6 @@ class Dorm {
     return this;
   }
 
-  // async errorHandler(){
-  //   await throw
-  // }
-
   async then(callback: Callback) {
     const action = this.info.action.type;
     const filter = this.info.filter.where;
@@ -233,9 +176,6 @@ class Dorm {
       },
       filter: {
         where: false,
-        // column: null,
-        // operator: null,
-        // value: null,
         condition: null,
       },
       returning: {
@@ -257,7 +197,6 @@ class Dorm {
 
   async query(str: string) {
     try {
-      // queries DB
       const client: PoolClient = await pool.connect();
       const dbResult = await client.queryObject(str);
       client.release();
@@ -276,17 +215,18 @@ export const dorm = new Dorm();
 
 function template(type: string): string {
   switch (type) {
+    case 'INSERT':
+      return `INSERT INTO ${dorm.info.action.table} (${dorm.info.action.columns}) VALUES ${dorm.info.action.values}`;
     case 'SELECT':
       return `SELECT ${dorm.info.action.columns} FROM ${dorm.info.action.table}`;
+    case 'UPDATE':
+      return `UPDATE ${dorm.info.action.table} SET ${dorm.info.action.columns}`;
     case 'DELETE':
       return `DELETE FROM ${dorm.info.action.table}`;
     case 'DROP':
       return `DROP TABLE ${dorm.info.action.table}`;
-    case 'INSERT':
-      // do logic in here for values result = [(),(),()]
-      return `INSERT INTO ${dorm.info.action.table} (${dorm.info.action.columns}) VALUES ${dorm.info.action.values}`;
     case 'WHERE':
-      return `WHERE ${dorm.info.filter.condition}`; //${dorm.info.filter.column} ${dorm.info.filter.operator} ${dorm.info.filter.value}`;
+      return `WHERE ${dorm.info.filter.condition}`;
     case 'RETURNING':
       return `RETURNING ${dorm.info.returning.columns}`;
     default:
@@ -311,17 +251,9 @@ function template(type: string): string {
 //   });
 
 const testQuery = await dorm
-  .insert([
-    { name: 'hantest2', gender: 'male' },
-    { name: 'hanjitest2', hair_color: 'sexy' },
-    {
-      hair_color: 'tits',
-      eye_color: 'rainbow',
-      name: 'nicktest2',
-      height: 99,
-    },
-  ])
-  .from('people')
+  .update({ name: 'MYOUNGHANJINICK', gender: 'UNICORN' })
+  .table('people')
+  .where('_id = 100')
   .returning()
   .then((data: any) => {
     console.log('Our then');
