@@ -1,10 +1,4 @@
-import { Client, Pool, PoolClient } from '../deps.ts';
-// import { template } from './sql-template.ts';
-
-const config =
-  'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
-
-const pool = new Pool(config, 3);
+import { pool, PoolClient } from './db-connector.ts';
 
 /**
  * QUERY BUILDER------------------------------------------------------------
@@ -30,8 +24,9 @@ interface Callback {
   (key: unknown): unknown;
 }
 
-class Dorm {
+export class Dorm {
   info: Info;
+  url: string;
 
   constructor() {
     this.info = {
@@ -50,10 +45,7 @@ class Dorm {
         columns: '*',
       },
     };
-  }
-
-  error() {
-    throw 'error';
+    this.url = '';
   }
 
   insert(arg: unknown[]) {
@@ -158,9 +150,9 @@ class Dorm {
     const returning = this.info.returning.active;
 
     let queryTemplate = '';
-    if (action) queryTemplate = template(action);
-    if (filter) queryTemplate += ` ${template('WHERE')}`;
-    if (returning) queryTemplate += ` ${template('RETURNING')}`;
+    if (action) queryTemplate = this.template(action);
+    if (filter) queryTemplate += ` ${this.template('WHERE')}`;
+    if (returning) queryTemplate += ` ${this.template('RETURNING')}`;
 
     console.log('QUERY STRING: ', queryTemplate);
 
@@ -205,63 +197,29 @@ class Dorm {
       throw e;
     }
   }
-}
 
-export const dorm = new Dorm();
+  connect(url: string) {
+    this.url = url;
+  }
 
-/**
- *  TEMPLATE ----------------------------------------------------------------
- */
-
-function template(type: string): string {
-  switch (type) {
-    case 'INSERT':
-      return `INSERT INTO ${dorm.info.action.table} (${dorm.info.action.columns}) VALUES ${dorm.info.action.values}`;
-    case 'SELECT':
-      return `SELECT ${dorm.info.action.columns} FROM ${dorm.info.action.table}`;
-    case 'UPDATE':
-      return `UPDATE ${dorm.info.action.table} SET ${dorm.info.action.columns}`;
-    case 'DELETE':
-      return `DELETE FROM ${dorm.info.action.table}`;
-    case 'DROP':
-      return `DROP TABLE ${dorm.info.action.table}`;
-    case 'WHERE':
-      return `WHERE ${dorm.info.filter.condition}`;
-    case 'RETURNING':
-      return `RETURNING ${dorm.info.returning.columns}`;
-    default:
-      return '';
+  template(type: string): string {
+    switch (type) {
+      case 'INSERT':
+        return `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.values}`;
+      case 'SELECT':
+        return `SELECT ${this.info.action.columns} FROM ${this.info.action.table}`;
+      case 'UPDATE':
+        return `UPDATE ${this.info.action.table} SET ${this.info.action.columns}`;
+      case 'DELETE':
+        return `DELETE FROM ${this.info.action.table}`;
+      case 'DROP':
+        return `DROP TABLE ${this.info.action.table}`;
+      case 'WHERE':
+        return `WHERE ${this.info.filter.condition}`;
+      case 'RETURNING':
+        return `RETURNING ${this.info.returning.columns}`;
+      default:
+        return '';
+    }
   }
 }
-
-/**
- * USER------------------------------------------------------------------------
- */
-// const testQuery = await dorm
-//   .select('*')
-//   .from('people')
-//   .where('_id = 1')
-//   .then((data: any) => {
-//     console.log('first then');
-//     return data.rows[0];
-//   })
-//   .then((data) => {
-//     console.log('promise then: ', data);
-//     return data;
-//   });
-
-const testQuery = await dorm
-  .update({ name: 'MYOUNGHANJINICK', gender: 'UNICORN' })
-  .table('people')
-  .where('_id = 100')
-  .returning()
-  .then((data: any) => {
-    console.log('Our then');
-    return data.rows;
-  })
-  .then((data) => {
-    console.log('Bult-in then: ', data);
-    return data;
-  })
-  .catch((e) => console.log('ERRRRRRRRRRRR', e));
-console.log('My Test Query:', testQuery);
