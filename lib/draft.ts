@@ -1,62 +1,131 @@
-/**
- * DATABASE MODEL----------------------------------------------------------
- */
-import { Client, Pool, PoolClient } from '../deps.ts';
-// import { template } from './sql-template.ts';
-
-const config =
-  'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
-
-const pool = new Pool(config, 3);
+import { query, poolConnect } from './db-connector.ts';
+import { template } from './sql-template.ts';
 
 /**
  * QUERY BUILDER------------------------------------------------------------
  */
 interface Info {
   action: {
-    type: string;
+    type: null | string;
     table: null | string;
     columns: null | string | string[];
-    values: null | string | string[];
+    values: string;
   };
   filter: {
     where: boolean;
-    // column: null | string;
-    // operator: null | string;
-    // value: null | string | number;
     condition: null | string;
+  };
+  returning: {
+    active: boolean;
+    columns: string | string[];
   };
 }
 
-class Dorm {
-  info: Info;
+interface Callback {
+  (key: unknown): unknown;
+}
 
-  constructor() {
+/**
+ * CLASS DORM STARTS FROM HERE ----------------------------------------
+ *
+ * @export
+ * @class Dorm
+ */
+export class Dorm {
+  info: Info;
+  template: any;
+  constructor(url: string) {
     this.info = {
       action: {
-        type: '',
+        type: null,
         table: null,
-        columns: null,
-        values: null,
+        columns: '*',
+        values: '',
       },
       filter: {
         where: false,
-        // column: null,
-        // operator: null,
-        // value: null,
         condition: null,
       },
+      returning: {
+        active: false,
+        columns: '*',
+      },
     };
+    poolConnect(url);
+    this.template = template.bind(this);
   }
 
-  error() {
-    throw 'error';
+  insert(arg: unknown[]) {
+    this.info.action.type = 'INSERT';
+
+    const columns: string[] = [];
+
+    const values: unknown[] = [];
+
+    arg.forEach((obj: any) => {
+      Object.keys(obj).forEach((col) => {
+        if (!columns.includes(col)) columns.push(col);
+      });
+    });
+
+    arg.forEach((obj: any) => {
+      const vals: any = [];
+      columns.forEach((col) => {
+        if (obj[col] === undefined) {
+          vals.push('null');
+        } else if (typeof obj[col] === 'string') {
+          vals.push(`'${obj[col]}'`);
+        } else {
+          vals.push(obj[col]);
+        }
+      });
+      values.push(vals);
+    });
+
+    this.info.action.columns = columns.join(', ');
+
+    values.forEach((data: any, index: number) => {
+      const tail = index === values.length - 1 ? '' : ', ';
+      this.info.action.values += `(${data.join(', ')})${tail}`;
+    });
+
+    return this;
   }
 
-  select(arg: string) {
-    if (this.info.action.type) throw 'error';
+  select(arg?: string) {
     this.info.action.type = 'SELECT';
-    this.info.action.columns = arg;
+    if (arg) this.info.action.columns = arg;
+    return this;
+  }
+
+  update(obj: any) {
+    // IMPLEMENT UPDATE
+    this.info.action.type = 'UPDATE';
+    this.info.action.columns = '';
+    // coulmns and values into info
+
+    Object.keys(obj).forEach((col, index) => {
+      let str = `${col} = `;
+      // what about undefined value?
+      if (typeof obj[col] === 'string') {
+        str += `'${obj[col]}'`; // string
+      } else {
+        str += `${obj[col]}`; // number, null, boolean
+      }
+      const tail = index === Object.keys(obj).length - 1 ? '' : ', ';
+      this.info.action.columns += `${str + tail}`;
+    });
+    return this;
+  }
+
+  delete() {
+    this.info.action.type = 'DELETE';
+    return this;
+  }
+
+  drop(arg?: string) {
+    this.info.action.type = 'DROP';
+    if (arg) this.info.action.table = arg;
     return this;
   }
 
@@ -64,8 +133,11 @@ class Dorm {
     this.info.action.table = arg;
     return this;
   }
-
+  /**
+   * Alias for table method
+   */
   from = this.table;
+  into = this.table;
 
   where(arg: string) {
     this.info.filter.where = true;
@@ -73,17 +145,45 @@ class Dorm {
     return this;
   }
 
-  async then(callback: (arg: unknown) => unknown): Promise<unknown> {
+  returning(arg?: string) {
+    this.info.returning.active = true;
+    if (arg) this.info.returning.columns = arg;
+    return this;
+  }
+
+  async then(callback: Callback) {
     const action = this.info.action.type;
     const filter = this.info.filter.where;
-    //if(!action){throw new Error}
+    const returning = this.info.returning.active;
 
-    let queryTemplate = template(action)!;
-    if (filter) queryTemplate = queryTemplate.concat(` ${template('WHERE')}`);
+    let queryTemplate = '';
+    if (action) queryTemplate = this.template(action);
+    if (filter) queryTemplate += ` ${this.template('WHERE')}`;
+    if (returning) queryTemplate += ` ${this.template('RETURNING')}`;
 
-    const result = await this.query(queryTemplate);
+    console.log('QUERY STRING: ', queryTemplate);
 
-    const promise = new Promise<unknown>((resolve, reject) => {
+    const result = await query(queryTemplate);
+
+    // clear info for future function
+    this.info = {
+      action: {
+        type: null,
+        table: null,
+        columns: '*',
+        values: '',
+      },
+      filter: {
+        where: false,
+        condition: null,
+      },
+      returning: {
+        active: false,
+        columns: '*',
+      },
+    };
+
+    const promise = new Promise((resolve, reject) => {
       try {
         resolve(callback(result));
       } catch (e) {
@@ -93,45 +193,4 @@ class Dorm {
 
     return promise;
   }
-
-  async query(str: string) {
-    // queries DB
-    const client: PoolClient = await pool.connect();
-    const dbResult = client.queryObject(str);
-    client.release();
-    return dbResult; // promise object
-  }
 }
-
-const dorm = new Dorm();
-
-/**
- *  TEMPLATE ----------------------------------------------------------------
- */
-function template(type: string) {
-  switch (type) {
-    case 'SELECT':
-      return `SELECT ${dorm.info.action.columns} FROM ${dorm.info.action.table}`;
-    case 'WHERE':
-      return `WHERE ${dorm.info.filter.condition}`; //${dorm.info.filter.column} ${dorm.info.filter.operator} ${dorm.info.filter.value}`;
-    default:
-      return;
-  }
-}
-
-/**
- * USER------------------------------------------------------------------------
- */
-const testQuery = await dorm
-  .select('*')
-  .from('people')
-  .where('_id = 1')
-  .then((data: any) => {
-    console.log('first then');
-    return data.rows[0];
-  })
-  .then((data) => {
-    console.log('promise then: ', data);
-    return data;
-  });
-console.log('My Test Query:', testQuery);

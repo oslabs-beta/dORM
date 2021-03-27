@@ -1,14 +1,12 @@
 import { Dorm } from './test.ts';
 
-const dorm = new Dorm();
-
-// dorm.connect(
-//   'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj'
-// );
+const url =
+  'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
+const dorm = new Dorm(url);
 
 const testQuery = await dorm
   .select('*')
-  .from('people')
+  .from('films')
   .where('_id = 1')
   .then((data: any) => {
     console.log('first then');
