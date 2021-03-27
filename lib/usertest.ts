@@ -12,7 +12,7 @@ const testQuery = await dorm
     console.log('first then');
     return data.rows[0];
   })
-  .then((data) => {
+  .then((data: any) => {
     console.log('promise then: ', data);
     return data;
   });
