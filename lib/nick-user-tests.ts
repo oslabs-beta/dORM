@@ -1,10 +1,10 @@
-import { Dorm } from './draft.ts';
+import { Dorm } from './draft-CATCH-ERRORS.ts';
 
 const url =
 'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
 const dorm = new Dorm(url);
 
-// COPY EXISTS, NICK-USER-TESTS, this can all be modified, deleted
+
 // **** SELECT
 
 const testQuery: any = await dorm

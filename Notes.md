@@ -66,3 +66,11 @@
 // }
 
 // SELECT \* FROM "public"."people" WHERE (hair_color = 'none' OR hair_color = 'blond') AND height > 180 AND NOT eye_color = 'red'
+
+
+
+
+Deno Run command:
+
+deno run --allow-net --unstable ./lib/usertest.ts
+
