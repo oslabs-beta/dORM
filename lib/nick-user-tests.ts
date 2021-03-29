@@ -1,4 +1,4 @@
-import { Dorm } from './draft.ts';
+import { Dorm } from './draft-CATCH-ERRORS.ts';
 
 const url =
 'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
@@ -13,10 +13,10 @@ try {
   // .select()
   .from('films')
   .where('_id = 1')
-  // .then((data: any) => {
-  //   console.log('first then');
-  //   return data.rows[0];
-  // })
+  .then((data: any) => {
+    console.log('first then');
+    return data.rows[0];
+  })
 //   .then((data: any) => {
 // // throw Error('test err');
 //     console.log('promise then: ', data);

@@ -19,8 +19,8 @@ WHERE: WHERE 'condition1' && (condition2 || condition3)
 this.where(condition1).orWhere(condition)
 }
 
-UNDEFINED VALUE IN UPDATE
-ERROR HANDLING IN CHAIN
+
+SINGLE OBJECT, NON-ARRAY INSERT
 MAKING ALL BUILDERS INTUITIVE
 
 // ---SELECT---
