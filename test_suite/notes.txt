@@ -1,0 +1,37 @@
+CREATE TABLE userprofile(
+  user_id serial PRIMARY KEY,
+	username VARCHAR ( 50 ) UNIQUE NOT NULL,
+	password VARCHAR ( 50 ) NULL,
+	email VARCHAR ( 255 ) UNIQUE NOT NULL,
+	created_on TIMESTAMP NOT NULL,
+        last_login TIMESTAMP 
+);
+
+CREATE TABLE post(
+  post_id serial PRIMARY KEY,
+	posts VARCHAR ( 250 ) NOT NULL,
+	comments VARCHAR (100 ) NULL,
+	likes INT CHECK ( likes >= 0),
+	created_on TIMESTAMP NOT NULL,
+  last_update TIMESTAMP ,
+user_id INT NOT NULL,
+FOREIGN KEY (user_id)
+      REFERENCES userprofile (user_id)
+);
+
+
+INSERT INTO 
+    userprofile(username, password, email ,created_on)
+VALUES
+    ('Golden_Retreiver', 'golDenR', 'iamagooddog@dogs.com',NOW()),
+    ('Superman', 'IamnotHuman', 'superman@superman.com',NOW()),
+    ('MrBing','BingbingBing', 'chandlerbing@bings.com',NOW());
+
+    
+INSERT INTO 
+    post(posts, comments, likes , user_id, created_on)
+VALUES
+    ('dORM', 'dORM is an amazing deno framework', 100, 1,NOW()),
+    ('dorm Members', 'Han, Hanji, Myo and Nick', '10',3,NOW());
+
+    

@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Security 
+.test_url.ts

@@ -9,11 +9,11 @@ const testQuery = await dorm
   .from('films')
   .where('_id = 1')
   .then((data: any) => {
-    console.log('first then');
+    // console.log('first then');
     return data.rows[0];
   })
   .then((data: any) => {
-    console.log('promise then: ', data);
+    // console.log('promise then: ', data);
     return data;
   });
 

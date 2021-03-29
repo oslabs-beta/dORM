@@ -88,7 +88,8 @@ export class Dorm {
       const tail = index === values.length - 1 ? '' : ', ';
       this.info.action.values += `(${data.join(', ')})${tail}`;
     });
-
+    console.log('columns:', this.info.action.columns);
+    console.log('values:', this.info.action.values);
     return this;
   }
 
@@ -161,7 +162,7 @@ export class Dorm {
     if (filter) queryTemplate += ` ${this.template('WHERE')}`;
     if (returning) queryTemplate += ` ${this.template('RETURNING')}`;
 
-    console.log('QUERY STRING: ', queryTemplate);
+    // console.log('QUERY STRING: ', queryTemplate);
 
     const result = await query(queryTemplate);
 
