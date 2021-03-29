@@ -1,6 +1,7 @@
 import { query, poolConnect } from './db-connector.ts';
 import { template } from './sql-template.ts';
 
+
 /* ----------------------------- TYPE INTERFACE ----------------------------- */
 interface Info {
   action: {
@@ -234,25 +235,7 @@ export class Dorm {
 
   /* ------------------------------- THEN METHOD ------------------------------ */
   async then(callback: Callback) {
-    const action = this.info.action.type;
-    const join = this.info.join.type;
-    const filter = this.info.filter.where;
-    const returning = this.info.returning.active;
-
-    let queryTemplate = '';
-    if (action) queryTemplate = this.template(action);
-    if (join) {
-      queryTemplate += this.template('JOIN');
-      queryTemplate += this.template('ON');
-    }
-    if (filter) queryTemplate += this.template('WHERE');
-    if (returning) queryTemplate += this.template('RETURNING');
-
-    console.log('Dorm then QUERY STRING: ', queryTemplate);
-
-    const result = await query(queryTemplate);
-
-    this._reset();
+    const result = await query(this.toString());
 
     const promise = new Promise((resolve, reject) => {
       try {
