@@ -2,8 +2,6 @@
 
 SELECT:
 -AS:under the hood
--JOINS: (JOIN/INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL JOIN)
--ON:
 -UNION
 -GROUP BY
 -ORDER BY
@@ -54,3 +52,6 @@ MAKING ALL BUILDERS INTUITIVE
 // UPDATE QUERY: `UPDATE ${table} SET ${columns} = ${values}`
 // WHERE CLAUSE: `WHERE ${columnName} ${operator} ${value}`
 // RETURNING CLAUSE: `RETURNING ${columns}`
+
+// --LEFT JOIN--
+// SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
