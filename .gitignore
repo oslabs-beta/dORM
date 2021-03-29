@@ -104,4 +104,7 @@ dist
 .tern-port
 
 # Security 
-.test_url.ts
+./test_suite/test_url.ts
+
+# Personal Notes(Myo)
+./test_suite/notes.txt
