@@ -145,7 +145,7 @@ export class Dorm {
     
     Object.keys(obj).forEach((col, index) => {
       let str = `${col} = `;
-
+      
       if (typeof obj[col] === 'string') {
         str += `'${obj[col]}'`; // string
       } else {
@@ -201,11 +201,15 @@ export class Dorm {
   }
   
   async then(callback: Callback) {
+    
+    console.log('from here')
     if (this.error.id) {
       this.setErrorMessage();
-      return new Promise((resolve, reject) => {
-        reject(this.error.message);
-      });
+      throw this.error.message;
+      // return new Promise((resolve, reject) => {
+      //   reject(this.error.message);
+      //   // throw this.error.message;
+      // });
     }
     
     const action = this.info.action.type;
@@ -239,14 +243,20 @@ export class Dorm {
       },
     };
     
-    const promise = new Promise((resolve, reject) => {
-      try {
-        resolve(callback(result));
-      } catch (e) {
-        reject(e);
-      }
-    });
+    try{
+      const cbRes = await callback(result);
+      return cbRes;
+    } catch (e) {
+      throw e;
+    }
+    // const promise = new Promise((resolve, reject) => {
+    //   try {
+    //     resolve(callback(result));
+    //   } catch (e) {
+    //     reject(e);
+    //   }
+    // });
     
-    return promise;
+    // return promise;
   }
 }
