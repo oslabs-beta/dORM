@@ -6,24 +6,27 @@ const dorm = new Dorm(url);
 
 
 // **** SELECT
+// try {
+//   const testQuery: any = await dorm
+//   .select()//'*')
+//   .from('films')
+//   .where('')//'_id = 1')
+//   .then((data: any) => {
+//     console.log('first then');
+//     return data.rows[0];
+//   })
+//   .then((data: any) => {
+//     console.log('promise then: ', data);
+//     return data;
+//   })
+//   .catch(e => console.log('.catch error:', e));
 
-const testQuery: any = await dorm
-.select('*')
-.from('films')
-.where('_id = 1')
-// .then((data: any) => {
-//   console.log('first then');
-//   return data.rows[0];
-// })
-// .then((data: any) => {
-//   console.log('promise then: ', data);
-//   return data;
-// });
+//   console.log('testQuery:', testQuery)
+// } catch (e) {
+//   console.log('Error:', e)
+// }
 
-// console.log('testQuery:', testQuery)
-
-
-console.log('testQuery:', testQuery.rows[0]);
+// console.log('testQuery:', testQuery.rows[0]);
 
 
 // **** UPDATE
@@ -48,25 +51,31 @@ console.log('testQuery:', testQuery.rows[0]);
 // **** INSERT
 
 // const testQuery = await dorm
-// .insert([
-//      { name: 'hantest2', gender: 'male' },
-//      { name: 'hanjitest2', hair_color: 'sexy' },
-//      {
-//        hair_color: 'tits',
-//        eye_color: 'rainbow',
-//        name: 'nicktest2',
-//        height: 99,
-//      },
-//    ])
-//    .from('people')
-//    .returning('name')
-//    .then((data: any) => {
-//      console.log('Our then');
-//      return data.rows[0];
-//    })
-//    .then((data) => {
-//      console.log('Bult-in then: ', data);
-//    });
+// // .insert([
+// //   { name: 'hantest2', gender: 'male' },
+// //   { name: 'hanjitest2', hair_color: 'sexy' },
+// //   {
+// //     hair_color: 'tits',
+// //     eye_color: 'rainbow',
+// //     name: 'nicktest2',
+// //     height: 99,
+// //   },
+// // ])
+// .insert([{name: 'Elvis'}, {name: 'Lebowski', hair_color: undefined}])
+// .from('people')
+// .returning('name')
+// .then((data: any) => {
+//   console.log('Our then');
+//   return data.rows;//[0];
+// })
+// .then((data) => {
+//   console.log('Bult-in then: ', data);
+//   return data;
+// })
+// .catch(e => console.log('.catch error:', e));
+
+// console.log('testQuery:', testQuery)
+
 
 
 // **** SELECT #2
