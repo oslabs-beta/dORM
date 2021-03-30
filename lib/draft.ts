@@ -1,15 +1,19 @@
 import { query, poolConnect } from './db-connector.ts';
 import { template } from './sql-template.ts';
 
-/**
- * QUERY BUILDER------------------------------------------------------------
- */
+
+/* ----------------------------- TYPE INTERFACE ----------------------------- */
 interface Info {
   action: {
     type: null | string;
     table: null | string;
     columns: null | string | string[];
     values: string;
+  };
+  join: {
+    type: null | string;
+    table: null | string;
+    on: null | string;
   };
   filter: {
     where: boolean;
@@ -25,12 +29,9 @@ interface Callback {
   (key: unknown): unknown;
 }
 
-/**
- * CLASS DORM STARTS FROM HERE ----------------------------------------
- *
- * @export
- * @class Dorm
- */
+/* -------------------------------------------------------------------------- */
+/*                                 DORM CLASS                                 */
+/* -------------------------------------------------------------------------- */
 export class Dorm {
   info: Info;
   template: any;
@@ -41,6 +42,11 @@ export class Dorm {
         table: null,
         columns: '*',
         values: '',
+      },
+      join: {
+        type: null,
+        table: null,
+        on: null,
       },
       filter: {
         where: false,
@@ -55,6 +61,7 @@ export class Dorm {
     this.template = template.bind(this);
   }
 
+  /* ------------------------------ INSERT METHOD ----------------------------- */
   insert(arg: unknown[]) {
     this.info.action.type = 'INSERT';
 
@@ -93,12 +100,14 @@ export class Dorm {
     return this;
   }
 
+  /* ------------------------------ SELECT METHOD ----------------------------- */
   select(arg?: string) {
     this.info.action.type = 'SELECT';
     if (arg) this.info.action.columns = arg;
     return this;
   }
 
+  /* ------------------------------ UPDATE METHOD ----------------------------- */
   update(obj: any) {
     // IMPLEMENT UPDATE
     this.info.action.type = 'UPDATE';
@@ -119,17 +128,20 @@ export class Dorm {
     return this;
   }
 
+  /* ------------------------------ DELETE METHOD ----------------------------- */
   delete() {
     this.info.action.type = 'DELETE';
     return this;
   }
 
+  /* ------------------------------- DROP METHOD ------------------------------ */
   drop(arg?: string) {
     this.info.action.type = 'DROP';
     if (arg) this.info.action.table = arg;
     return this;
   }
 
+  /* ------------------------------ TABLE METHOD ------------------------------ */
   table(arg: string) {
     this.info.action.table = arg;
     return this;
@@ -140,32 +152,64 @@ export class Dorm {
   from = this.table;
   into = this.table;
 
+  /* ------------------------------ JOIN METHODS ------------------------------ */
+  join(arg: string) {
+    this.info.join.type = 'INNER';
+    this.info.join.table = arg;
+    return this;
+  }
+
+  leftJoin(arg: string) {
+    this.info.join.type = 'LEFT';
+    this.info.join.table = arg;
+    return this;
+  }
+
+  rightJoin(arg: string) {
+    this.info.join.type = 'RIGHT';
+    this.info.join.table = arg;
+    return this;
+  }
+
+  fullJoin(arg: string) {
+    this.info.join.type = 'FULL';
+    this.info.join.table = arg;
+    return this;
+  }
+  /**
+   * Alias for join method
+   */
+  innerJoin = this.join;
+  leftOuterJoin = this.leftJoin;
+  rightOuterJoin = this.rightJoin;
+  fullOuterJoin = this.fullJoin;
+
+  /* -------------------------------- ON METHOD ------------------------------- */
+  on(arg: string) {
+    this.info.join.on = arg;
+    return this;
+  }
+
+  /* ------------------------------ WHERE METHOD ------------------------------ */
   where(arg: string) {
     this.info.filter.where = true;
     this.info.filter.condition = arg;
     return this;
   }
 
+  /* ---------------------------- RETURNING METHOD ---------------------------- */
   returning(arg?: string) {
     this.info.returning.active = true;
     if (arg) this.info.returning.columns = arg;
     return this;
   }
 
-  async then(callback: Callback) {
-    const action = this.info.action.type;
-    const filter = this.info.filter.where;
-    const returning = this.info.returning.active;
+  /* -------------------------------------------------------------------------- */
+  /*                           QUERY BUILDER FUNCTIONS                          */
+  /* -------------------------------------------------------------------------- */
 
-    let queryTemplate = '';
-    if (action) queryTemplate = this.template(action);
-    if (filter) queryTemplate += ` ${this.template('WHERE')}`;
-    if (returning) queryTemplate += ` ${this.template('RETURNING')}`;
-
-    // console.log('QUERY STRING: ', queryTemplate);
-
-    const result = await query(queryTemplate);
-
+  /* ------------------------------ RESET METHOD ------------------------------ */
+  private _reset() {
     // clear info for future function
     this.info = {
       action: {
@@ -173,6 +217,11 @@ export class Dorm {
         table: null,
         columns: '*',
         values: '',
+      },
+      join: {
+        type: null,
+        table: null,
+        on: null,
       },
       filter: {
         where: false,
@@ -183,6 +232,11 @@ export class Dorm {
         columns: '*',
       },
     };
+  }
+
+  /* ------------------------------- THEN METHOD ------------------------------ */
+  async then(callback: Callback) {
+    const result = await query(this.toString());
 
     const promise = new Promise((resolve, reject) => {
       try {
@@ -193,5 +247,28 @@ export class Dorm {
     });
 
     return promise;
+  }
+
+  /* ----------------------------- TOSTRING METHOD ---------------------------- */
+  toString() {
+    const action = this.info.action.type;
+    const join = this.info.join.type;
+    const filter = this.info.filter.where;
+    const returning = this.info.returning.active;
+
+    let queryTemplate = '';
+    if (action) queryTemplate = this.template(action);
+    if (join) {
+      queryTemplate += this.template('JOIN');
+      queryTemplate += this.template('ON');
+    }
+    if (filter) queryTemplate += this.template('WHERE');
+    if (returning) queryTemplate += this.template('RETURNING');
+
+    console.log('Dorm toString QUERY STRING: ', queryTemplate);
+
+    this._reset();
+
+    return queryTemplate;
   }
 }

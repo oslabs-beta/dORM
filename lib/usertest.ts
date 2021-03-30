@@ -1,21 +1,18 @@
-import { Dorm } from './test.ts';
+
+import { Dorm } from './draft.ts';
 
 const url =
   'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
 const dorm = new Dorm(url);
 
 const testQuery = await dorm
-  .select('*')
-  .from('films')
-  .where('_id = 1')
-  .then((data: any) => {
-    // console.log('first then');
-    return data.rows[0];
-  })
-  .then((data: any) => {
-    // console.log('promise then: ', data);
-    return data;
-  });
+  .select('*, people.name AS name, species.name AS sName')
+  .from('people')
+  .leftJoin('species')
+  .on('people.species_id = species._id')
+  .toString();
+
+console.log(testQuery);
 
 // const testQuery = await dorm
 //   .update({ name: 'MYOUNGHANJINICK', gender: 'UNICORN' })
