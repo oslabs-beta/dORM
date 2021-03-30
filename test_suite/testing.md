@@ -4,9 +4,9 @@
 
 #### (create a new database url in test_url.ts if it does not exist)
 
-- [x]delete it after testing is completed for your secrity.
-- [x]please create a userprofile table before testing it if you use your own database.
-  _(will be updating this part after adding create table method.)_
+- [x] delete it after testing is completed for your secrity.
+- [x] please create a userprofile table before testing it if you use your own database.
+      _(will be updating this part after adding create table method.)_
 
 ### Select test file is completed. Testing includes the following:
 
