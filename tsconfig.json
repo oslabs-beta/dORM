@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ESNEXT",
+    "module": "commonjs"
+  },
+  "include": ["src/**/*", "tests/**/*"]
+  
+}
