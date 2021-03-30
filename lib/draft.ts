@@ -1,7 +1,6 @@
 import { query, poolConnect } from './db-connector.ts';
 import { template } from './sql-template.ts';
 
-
 /* ----------------------------- TYPE INTERFACE ----------------------------- */
 interface Info {
   action: {
