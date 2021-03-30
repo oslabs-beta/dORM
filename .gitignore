@@ -108,3 +108,6 @@ dist
 
 # Personal Notes(Myo)
 ./test_suite/notes.txt
+
+# deno lint
+.vscode/
