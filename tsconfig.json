@@ -1,4 +1,7 @@
 {
+  "path": {
+    "*.ts": ["*"]
+  },
   "compilerOptions": {
     "target": "ESNEXT",
     "module": "commonjs"
