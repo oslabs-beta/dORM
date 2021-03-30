@@ -102,3 +102,9 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Security 
+./test_suite/test_url.ts
+
+# Personal Notes(Myo)
+./test_suite/notes.txt
