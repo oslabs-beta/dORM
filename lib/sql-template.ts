@@ -1,4 +1,4 @@
-import { Dorm } from './test.ts';
+import { Dorm } from './draft.ts';
 
 export function template(this: Dorm, arg: string): string {
   switch (arg) {
