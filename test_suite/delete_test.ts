@@ -19,20 +19,21 @@ const dorm = new Dorm(database);
 const initialSetup = await dorm
 .insert([
   {
+    
     'username':'Golden_Retreiver',
-    'password': 'golDenR',
+    'nickname': 'golDenR',
     'email':'iamagooddog@dogs.com',
     'created_on': 'NOW()'
   },
   {
     'username':'Superman',
-    'password':'IamnotHuman',
+    'nickname':'IamnotHuman',
     'email':'superman@superman.com',
     'created_on': 'NOW()'
   },
   {
     'username':'MrBing',
-    'password':'BingbingBing',
+    'nickname':'BingbingBing',
     'email':'chandlerbing@bings.com',
     'created_on': 'NOW()'
   }
@@ -191,7 +192,7 @@ const testDeleteQuery3 = await dorm
 })
 
 Deno.test(`all rows query in "DELETE" method:`, ()=> {
-  const tableName = 'delete';
+  const tableName = 'users';
   const condition = ``
   const test = dorm
   .delete()
