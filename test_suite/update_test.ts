@@ -31,6 +31,7 @@ const invalidUpdate = await dorm
 .then((data: any) => {
 })
 .catch((e)=> {return false}) 
+console.log(invalidUpdate);
 Deno.test(`all queries to be valid in "UPDATE" method:`,() => {
   assertEquals(invalidUpdate, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`)
 })

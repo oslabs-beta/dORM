@@ -81,6 +81,7 @@ Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
   assertEquals(test.info.filter.condition , `${condition}`, `Error:condition is not updated to ${condition}`);
+  
   /*----------------RESETTING INITIAL VALUES----------------*/
   test.toString();
   assertEquals(test.info.action.type , null, 'Error:Type is not reset after query');
