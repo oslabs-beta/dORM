@@ -21,6 +21,14 @@ this.where(condition1).orWhere(condition)
 
 
 SINGLE OBJECT, NON-ARRAY INSERT
+ERROR FOR NO RETURNING ON SELECT
+PROMISE INSIDE LOOP
+PARAMETERIZED QUERIES?
+ORM?
+
+
+
+
 MAKING ALL BUILDERS INTUITIVE
 
 // ---SELECT---
@@ -55,3 +63,6 @@ MAKING ALL BUILDERS INTUITIVE
 
 // --LEFT JOIN--
 // SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
+
+
+deno run --allow-net --unstable ./lib/usertest.ts
