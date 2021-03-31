@@ -17,25 +17,16 @@ const dorm = new Dorm(database);
 var updateId = Math.floor(Math.random()*35);
 
 
-// async function test() {
-  try {
-    const testQuery: any = await dorm.select()
-    .delete()
-    .from('userprofile')
-    .then((data: any) => {
-      return 
-    })
-    .catch(error => {
-      console.log('This is error:',error)
-      // edgeCaseErrors.case1=error
-      return error
-    })
-    
-    // console.log('testQuery:', testQuery.rows[0]);
-  } catch (e) {
-    console.log('Errorrrrr:', e);
-  }
-  
+// // async function test() {
+//     const testQuery: any = await dorm.select('username')
+//     .from('userprofile')
+//     .then((data: any) => {
+//       return data;
+//     })
+//     .catch(error => {
+//       console.log('This is error:',error)
+//       return error
+//     })
 
 
 

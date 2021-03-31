@@ -1,12 +1,15 @@
 # Creating testing environment
 
-### Add your database url in the _test_url.ts_
+## Please follow the instructions below prior to test this deno module:
 
-#### (create a new database url in test_url.ts if it does not exist)
-
-- [x] delete it after testing is completed for your secrity.
-- [x] please create a userprofile table before testing it if you use your own database.
+- [ ] Go to your terminal and verify that you can run the psql command:
+- [ ] Invoke `psql -d <url from elephantSQL> -f ./test_suite/db_test_postgres_create.sql`. This will open the connection to your database and execute the SQL statements that will create tables in your database and populate them with rows of data. Make sure you let the script run all the way through. It will take a minute or two.
+- [ ] please create a userprofile table before testing it if you use your own database.
       _(will be updating this part after adding create table method.)_
+
+## Running all tests at once:
+
+- Invoke `deno test --allow-net --unstable` in your terminal. Make sure to check deno version to be latest version to run the test.
 
 ### Select test file is completed. Testing includes the following:
 
@@ -22,7 +25,7 @@
 - [x] Single-row query checking
 - [x] Multiple-rows query checking
 - [x] The whole table insert query checking
-- [ ] Only one method for each query checking
+- [x] Only one method for each query checking
 
 ### Update test file is completed. Testing includes the following:
 
@@ -30,7 +33,7 @@
 - [x] Single-row query checking
 - [x] Multiple-rows query checking
 - [x] The whole table update query checking
-- [ ] Only one method for each query checking
+- [x] Only one method for each query checking
 
 ### Delete test file is completed. Testing includes the following:
 
