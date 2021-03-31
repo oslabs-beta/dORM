@@ -65,7 +65,7 @@ const invalidDelete = await dorm
 });
 console.log('invalidDelete: ',invalidDelete)
 Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
-  const tableName = 'user';
+  const tableName = 'users';
   const condition = `user_id = ${updateId}`
   const test = dorm
   .delete()
@@ -74,12 +74,13 @@ Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
   .returning();
   console.log('test from all queries:',test.info);
   assertEquals(invalidDelete, [],'Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.');
-  // assertEquals(test.info.action.type , "DELETE", 'Error:Type should be updated to DELETE');
-  // assertEquals(test.info.action.table , tableName, 'Error:Table should be updated to userprofile');
-  // assertEquals(test.info.filter.where , true, `Error:where should be updated to true`);
-  // assertEquals(test.info.filter.condition , condition, `Error:condition should be updated to ${condition}`);
-  // assertEquals(test.info.returning.active , active, 'Error:Returning should be updated');  
-  // assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning should be pdated');
+  
+  assertEquals(test.info.action.type , "DELETE", 'Error:Type should be updated to DELETE');
+  assertEquals(test.info.action.table , tableName, 'Error:Table should be updated to userprofile');
+  assertEquals(test.info.filter.where , true, `Error:where should be updated to true`);
+  assertEquals(test.info.filter.condition , condition, `Error:condition should be updated to ${condition}`);
+  assertEquals(test.info.returning.active , true, 'Error:Returning should be updated');  
+  assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning should be pdated');
   
   /*----------------RESETTING INITIAL VALUES----------------*/
   test.toString();
@@ -101,7 +102,7 @@ const deleteOneQuery = await dorm
 .returning()
 .then((data:any)=> {
   return data.rows;
-});
+}); // []
 
 console.log('deleteOneQuery:', deleteOneQuery);
 const testDeleteQuery1 = await dorm
@@ -110,9 +111,8 @@ const testDeleteQuery1 = await dorm
 .where(`user_id = ${updateId}`)
 .then((data: any) => {
   return data.rows;
-});
+}); // []
 
-console.log('testDeleteQuery1:',testDeleteQuery1);
 
 Deno.test(`single-row query in "DELETE" method:`, ()=> {
   const tableName = 'userprofile';
@@ -123,7 +123,7 @@ Deno.test(`single-row query in "DELETE" method:`, ()=> {
   .where(condition)
   .returning();
   console.log('test.info from single-row:',test.info)
-  assertNotEquals(testDeleteQuery1, deleteOneQuery,'Error:Delete query is not completed!');
+  assertNotEquals(deleteOneQuery, [] ,'Error:Delete query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
@@ -167,7 +167,8 @@ Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   .from(tableName)
   .where(condition)
   .returning();
-  assertNotEquals(testDeleteQuery2, undefined,'Error:Multiple DELETE query is not completed!');
+  console.log('test.info from multiple-rows query:',test.info)
+  assertNotEquals(testDeleteQuery2, deleteMultipleQuery,'Error:Multiple DELETE query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
