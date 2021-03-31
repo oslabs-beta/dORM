@@ -297,8 +297,11 @@ export class Dorm {
   async then(callback: Callback, fail: Callback = (rej) => rej) {
     if (this.error.id) {
       this.setErrorMessage();
+
       this._reset();
+      
       const cbText = callback.toString();
+      
       if (isNative(cbText)) {
         return await callback(Promise.reject(this.error.message));
       }
@@ -308,7 +311,7 @@ export class Dorm {
     function isNative(fn: any) {
       return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
-
+    
     const result = await query(this.toString());
 
     try {
