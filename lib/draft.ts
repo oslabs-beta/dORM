@@ -293,12 +293,23 @@ export class Dorm {
   }
   
   /* ------------------------------- THEN METHOD ------------------------------ */
-  async then(callback: Callback) {
-    if (this.error.id) {
-      this.setErrorMessage();
-      return await callback(Promise.reject(this.error.message));
-    }
+  async then(callback: Callback, fail: Callback = (rej) => rej) {
 
+    if (this.error.id) {
+      
+      this.setErrorMessage();
+
+      const cbText = callback.toString();
+      if (isNative(cbText)) {
+        return await callback(Promise.reject(this.error.message));
+      }
+      return await fail(Promise.reject(this.error.message));
+    }
+    // thanks to David Walsh at https://davidwalsh.name/detect-native-function
+    function isNative(fn: any) {
+      return (/\{\s*\[native code\]\s*\}/).test('' + fn);
+    }
+    
     const result = await query(this.toString());
     
     try{
