@@ -1,33 +1,35 @@
 import { Dorm } from './draft.ts';
 
 const url =
-'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
+  'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
 const dorm = new Dorm(url);
 
 // **** SELECT
 
 // async function test() {
-// try {
-  const testQuery: any = await dorm
-  .select()//'*')
-  .delete()
-  .from('films')
-  .where('_id = 1')
-  .then((data: any) => {
-    console.log('first then');
-    return data.rows[0];
-  })
-//   .then((data: any) => {
-// // throw Error('test err');
-//     console.log('promise then: ', data.rows[0]);
-//     return data;
-//   })
-  .catch(e => console.log('.catch error:', e));
+try {
+  const testQuery: any = await dorm.rawrr(
+    'SELECT ** FROM people WHERE _id = 1'
+  );
+  // .select()//'*')
+  // .select()
+  // .from('films')
+  // .where('_id = 1')
+  // .then((data: any) => {
+  //   console.log('first then');
+  //   return data.rows[0];
+  // })
+  //   .then((data: any) => {
+  // // throw Error('test err');
+  //     console.log('promise then: ', data);
+  //     return data;
+  //   })
+  // .catch(e => console.log('.catch error:', e));
 
-  // console.log('testQuery:', testQuery.rows[0]);
-// } catch (e) {
-//   console.log('Errorrrrr:', e);
-// }
+  console.log('testQuery:', testQuery);
+} catch (e) {
+  console.log('Errorrrrr:', e);
+}
 // }
 
 
@@ -35,7 +37,6 @@ const dorm = new Dorm(url);
 // test().catch(e => console.log(e));
 
 // console.log('testQuery:', testQuery.rows[0]);
-
 
 // **** UPDATE
 
@@ -54,7 +55,6 @@ const dorm = new Dorm(url);
 //   })
 //   .catch((e) => console.log('ERRRRRRRRRRRR', e));
 // console.log('My Test Query:', testQuery);
-
 
 // **** INSERT
 
@@ -83,8 +83,6 @@ const dorm = new Dorm(url);
 // .catch(e => console.log('.catch error:', e));
 
 // console.log('testQuery:', testQuery)
-
-
 
 // **** SELECT #2
 
