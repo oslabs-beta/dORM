@@ -217,7 +217,7 @@ export class Dorm {
   }
   
   /* ------------------------------ DELETE METHOD ----------------------------- */
-  delete() {
+  delete(arg?: string) {
     if (this.checkErrors(1)) return this;
     
     this.info.action.type = 'DELETE';
@@ -349,9 +349,9 @@ export class Dorm {
     if (this.error.id) {
       this.setErrorMessage();
       this._reset();
-      
+
       const cbText = callback.toString();
-      
+
       if (isNative(cbText)) {
         return await callback(Promise.reject(this.error.message));
       }
@@ -361,7 +361,11 @@ export class Dorm {
     function isNative(fn: any) {
       return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> main
     const result = await query(this.toString());
     
     try {

@@ -4,4 +4,5 @@ export { PoolClient } from 'https://deno.land/x/postgres@v0.8.0/client.ts';
 export {
   assertEquals,
   assertNotEquals,
-} from "https://deno.land/std@0.91.0/testing/asserts.ts";
+} from 'https://deno.land/std@0.91.0/testing/asserts.ts';
+export { config } from 'https://deno.land/x/dotenv/mod.ts';
