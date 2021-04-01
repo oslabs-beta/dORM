@@ -168,9 +168,8 @@ export class Dorm {
   }
 
   /* ------------------------------ DELETE METHOD ----------------------------- */
-  delete() {
+  delete(arg?: string) {
     if (this.checkErrors(1)) return this;
-
     this.info.action.type = 'DELETE';
     return this;
   }
@@ -294,10 +293,22 @@ export class Dorm {
   }
 
   /* ------------------------------- THEN METHOD ------------------------------ */
-  async then(callback: Callback) {
+  async then(callback: Callback, fail: Callback = (rej) => rej) {
     if (this.error.id) {
       this.setErrorMessage();
-      return await Promise.reject(this.error.message);
+
+      this._reset();
+
+      const cbText = callback.toString();
+
+      if (isNative(cbText)) {
+        return await callback(Promise.reject(this.error.message));
+      }
+      return await fail(Promise.reject(this.error.message));
+    }
+    // thanks to David Walsh at https://davidwalsh.name/detect-native-function
+    function isNative(fn: any) {
+      return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
 
     const result = await query(this.toString());
@@ -331,4 +342,11 @@ export class Dorm {
 
     return queryTemplate;
   }
+
+  /* ------------------------------ RAW METHOD ------------------------------ */
+  async raw(arg: string) {
+    return await query(arg);
+  }
+  rawr = this.raw;
+  rawrr = this.raw;
 }

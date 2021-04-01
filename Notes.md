@@ -19,8 +19,12 @@ WHERE: WHERE 'condition1' && (condition2 || condition3)
 this.where(condition1).orWhere(condition)
 }
 
-
 SINGLE OBJECT, NON-ARRAY INSERT
+ERROR FOR NO RETURNING ON SELECT
+PROMISE INSIDE LOOP
+PARAMETERIZED QUERIES?
+ORM?
+
 MAKING ALL BUILDERS INTUITIVE
 
 // ---SELECT---
@@ -55,3 +59,7 @@ MAKING ALL BUILDERS INTUITIVE
 
 // --LEFT JOIN--
 // SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
+
+deno run --allow-net --unstable ./lib/usertest.ts
+
+deno run --allow-net --unstable --allow-env --allow-read ./demoFolder/demo.ts
