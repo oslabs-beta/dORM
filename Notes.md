@@ -20,14 +20,16 @@ this.where(condition1).orWhere(condition)
 }
 
 
-SINGLE OBJECT, NON-ARRAY INSERT
-ERROR FOR NO RETURNING ON SELECT
+SINGLE OBJECT, NON-ARRAY INSERT - done
+ERROR FOR NO RETURNING ON SELECT - done
+
+DELETEALL METHOD TO PREVENT DELETE WITHOUT WHERE DISASTER - done
+BUILD ARRAY OF CHAINED METHOD ORDER - done
+FIXED NOT SAVING ERROR MESSAGE BEFORE RESET IN .THEN - done
+
 PROMISE INSIDE LOOP
 PARAMETERIZED QUERIES?
 ORM?
-
-
-
 
 MAKING ALL BUILDERS INTUITIVE
 
@@ -64,5 +66,6 @@ MAKING ALL BUILDERS INTUITIVE
 // --LEFT JOIN--
 // SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
 
-
 deno run --allow-net --unstable ./lib/usertest.ts
+
+deno run --allow-net --unstable --allow-env --allow-read ./demoFolder/demo.ts
