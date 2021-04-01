@@ -345,7 +345,7 @@ const testUpdateQuery1 = await dorm
 .then((data: any) => {
   
   return data.rows;
-})
+}).catch(e => e);
 
 const updateQuery = await dorm
 .update({'username':'newDogs', 'password': 'iLoveDogs'}).where(`user_id = ${updateId}`)
@@ -353,7 +353,7 @@ const updateQuery = await dorm
 .returning()
 .then((data: any) => {
   return data;
-})
+}).catch(e => e);
 
 
 Deno.test(`a single-row query in "UPDATE" method:`, () => {
@@ -385,7 +385,7 @@ const testUpdateQuery2 = await dorm
 .where(`user_id <= ${updateId}`)
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 const multipleRowsQuery = await dorm
 .update({'username':'Dogs', 'password': 'ihave8Dogs'})
@@ -394,7 +394,7 @@ const multipleRowsQuery = await dorm
 .returning()
 .then((data: any) => {
   return data;
-})
+}).catch(e => e);
 
 Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'Dogs', 'password': 'ihave8Dogs'}).where(`user_id <= ${updateId}`)
@@ -421,7 +421,7 @@ const testUpdateQuery3 = await dorm
 .from('userprofile')
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 const allRowsUpdateQuery = await dorm
 .update({'username':'restarted', 'password': 'iamADog'})
@@ -429,7 +429,7 @@ const allRowsUpdateQuery = await dorm
 .returning()
 .then((data: any) => {
   return data;
-})
+}).catch(e => e);
 Deno.test(`all rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'restarted', 'password': 'iamADog'})
   .from('userprofile')
@@ -509,7 +509,7 @@ const deleteOneQuery = await dorm
 .returning()
 .then((data:any)=> {
   return data.rows;
-}); // []
+}).catch(e => e); // []
 
 console.log('deleteOneQuery:', deleteOneQuery);
 const testDeleteQuery1 = await dorm
@@ -518,7 +518,7 @@ const testDeleteQuery1 = await dorm
 .where(`user_id = ${updateId}`)
 .then((data: any) => {
   return data.rows;
-}); // []
+}).catch(e => e); // []
 
 
 Deno.test(`single-row query in "DELETE" method:`, ()=> {
@@ -558,14 +558,14 @@ const deleteMultipleQuery = await dorm
 .returning()
 .then(data=> {
   return data;
-});
+}).catch(e => e);
 const testDeleteQuery2 = await dorm
 .select()
 .from('userprofile')
 .where(`user_id = ${updateId+1}`)
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -601,13 +601,14 @@ const deleteAllQuery = await dorm
 .returning()
 .then(data=> {
   return data;
-});
+}).catch(e => e);
+console.log('deleteAllQuery:', deleteAllQuery);
 const testDeleteQuery3 = await dorm
 .select()
 .from('users')
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 Deno.test(`all rows query in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -617,22 +618,13 @@ Deno.test(`all rows query in "DELETE" method:`, ()=> {
   .from(tableName)
   .where(condition)
   .returning();
-  assertNotEquals(testDeleteQuery3, undefined,'Error:Multiple DELETE query is not completed!');
+  console.log("all rows test.info:", test.info);
+  assertEquals(deleteAllQuery,'No delete without where (use deleteAll to delete all rows)','Error:Multiple DELETE query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
   assertEquals(test.info.filter.condition , condition, `Error:condition is not updated to ${condition}`);
   assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
-  assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
-  /*----------------RESETTING INITIAL VALUES----------------*/
-  test.toString()
-  assertEquals(test.info.action.type , null, 'Error:Type is not reset');
-  assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
-  assertEquals(test.info.action.values , '', 'Error:Values are not reset');
-  assertEquals(test.info.action.table , null, 'Error:Table is not reset');
-  assertEquals(test.info.filter.where , false, `Error:where is not reset after query`);
-  assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
-  assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
 })
 

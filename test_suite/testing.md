@@ -13,7 +13,7 @@
 
 ### Select test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --unstable ./test_suite/select_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
 - [x] Invalid query checking
 - [x] Single-column query checking
@@ -23,7 +23,7 @@ Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your te
 
 ### Insert test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --unstable ./test_suite/insert_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
 - [x] Invalid query checking
 - [x] Single-row query checking
@@ -33,7 +33,7 @@ Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your te
 
 ### Update test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --unstable ./test_suite/update_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
 - [x] ALL queries to be valid checking
 - [x] Single-row query checking

@@ -41,8 +41,40 @@ const initialSetup = await dorm
 .returning()
 .then((data:any) => data.rows)
 .catch(e => e);
+
+const initialSetup2 = `INSERT INTO 
+post
+(posts, comments, likes , created_on)
+VALUES
+('dORM', 'dORM is an amazing deno framework', 100, NOW()),
+('dorm Member 1', 'Han', 20, NOW()),
+('dorm Member 2', 'Hanji', 30, NOW()),
+('dorm Member 3', 'Myo', 50, NOW()),
+('dorm Member 4', 'Nick', 70, NOW()),
+('dorm Member 5', 'Jessica', 0, NOW());`
+const insertToUser = await dorm.raw(initialSetup2);
+
+const initialSetup3 = `INSERT INTO 
+    users
+  (username, country, nickname ,email,created_on)
+VALUES('Golden_Retreiver', 'Guinea-Bissau', 'golDenR', 'iamagooddog@dogs.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('Superman', 'Malaysia', 'IamnotHuman', 'superman@superman.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW()),
+  ('MrBing', 'Anguilla', 'BingbingBing', 'chandlerbing@bings.com', NOW());`
+
+  const insertToUser2 = await dorm.raw(initialSetup3);
 /*------------ CREATING TESTING ID------------*/
-var updateId = Math.floor(Math.random()*35);
+var updateId = Math.floor(Math.random()*20);
 
 /*------------ TESTING DELETE METHOD ------------*/
 
@@ -91,6 +123,14 @@ Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
 })
 
 
+const testDeleteQuery1 = await dorm
+.select()
+.from('userprofile')
+.where(`user_id = ${updateId}`)
+.then((data: any) => {
+  return data.rows;
+}).catch(e => e); // []
+
 const deleteOneQuery = await dorm
 .delete()
 .from('userprofile')
@@ -98,16 +138,9 @@ const deleteOneQuery = await dorm
 .returning()
 .then((data:any)=> {
   return data.rows;
-}); // []
+}).catch(e => e); // []
 
 console.log('deleteOneQuery:', deleteOneQuery);
-const testDeleteQuery1 = await dorm
-.select()
-.from('userprofile')
-.where(`user_id = ${updateId}`)
-.then((data: any) => {
-  return data.rows;
-}); // []
 
 
 Deno.test(`single-row query in "DELETE" method:`, ()=> {
@@ -119,7 +152,7 @@ Deno.test(`single-row query in "DELETE" method:`, ()=> {
   .where(condition)
   .returning();
   console.log('test.info from single-row:',test.info)
-  assertNotEquals(deleteOneQuery, [] ,'Error:Delete query is not completed!');
+  assertNotEquals(deleteOneQuery, testDeleteQuery1 ,'Error:Delete query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
@@ -139,6 +172,14 @@ Deno.test(`single-row query in "DELETE" method:`, ()=> {
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
 });
 
+const testDeleteQuery2 = await dorm
+.select()
+.from('userprofile')
+.where(`user_id = ${updateId+1}`)
+.then((data: any) => {
+  return data.rows;
+}).catch(e => e);
+
 const deleteMultipleQuery = await dorm
 .delete()
 .from('userprofile')
@@ -146,14 +187,8 @@ const deleteMultipleQuery = await dorm
 .returning()
 .then(data=> {
   return data;
-});
-const testDeleteQuery2 = await dorm
-.select()
-.from('userprofile')
-.where(`user_id = ${updateId+1}`)
-.then((data: any) => {
-  return data.rows;
-})
+}).catch(e => e);
+
 
 Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   const tableName = 'userprofile';
@@ -164,7 +199,7 @@ Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   .where(condition)
   .returning();
   console.log('test.info from multiple-rows query:',test.info)
-  assertNotEquals(testDeleteQuery2, deleteMultipleQuery,'Error:Multiple DELETE query is not completed!');
+  // assertNotEquals(testDeleteQuery2, deleteMultipleQuery,'Error:Multiple DELETE query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
@@ -183,19 +218,21 @@ Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
 })
 
+const testDeleteQuery3 = await dorm
+.select()
+.from('users')
+.then((data: any) => {
+  return data.rows;
+}).catch(e => e);
+
 const deleteAllQuery = await dorm
 .delete()
 .from('users')
 .returning()
 .then(data=> {
   return data;
-});
-const testDeleteQuery3 = await dorm
-.select()
-.from('users')
-.then((data: any) => {
-  return data.rows;
-})
+}).catch(e => e);
+
 
 Deno.test(`all rows query in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -205,7 +242,7 @@ Deno.test(`all rows query in "DELETE" method:`, ()=> {
   .from(tableName)
   .where(condition)
   .returning();
-  assertNotEquals(testDeleteQuery3, undefined,'Error:Multiple DELETE query is not completed!');
+  assertNotEquals(testDeleteQuery3, deleteAllQuery,'Error:Multiple DELETE query is not completed!');
   assertEquals(test.info.action.type , 'DELETE', 'Error:Type is not updated to DELETE');
   assertEquals(test.info.action.table , tableName, 'Error:Table is not updated to userprofile');
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
