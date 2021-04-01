@@ -440,7 +440,6 @@ export class Dorm {
     if (this.error.id) {
       this.setErrorMessage();
       const { message } = this.error
-      
       this._reset();
       throw message;
     }
