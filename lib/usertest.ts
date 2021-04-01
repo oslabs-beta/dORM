@@ -32,6 +32,8 @@ try {
 }
 // }
 
+
+
 // test().catch(e => console.log(e));
 
 // console.log('testQuery:', testQuery.rows[0]);
@@ -97,3 +99,23 @@ try {
 //    })
 //    .catch((e) => console.log('ERRRRRRRRRRRR', e));
 //  console.log('My Test Query:', testQuery);
+
+
+// const testQuery: any = await dorm
+// .select() //'*')
+// .select()
+// .from('people')
+// .where('_id = 1')
+// .then((data: any) => {
+//   console.log('first then');
+//   return data.rows[0];
+// })
+//   .then((data: any) => {
+// // throw Error('test err');
+//     console.log('promise then: ', data);
+//     return data;
+//   })
+// .catch(e => console.log('.catch error:', e));
+
+
+// console.log('testQuery:', testQuery.rows[0]);
