@@ -37,10 +37,18 @@ interface Error {
 /*                                 DORM CLASS                                 */
 /* -------------------------------------------------------------------------- */
 export class Dorm {
+  callOrder: string[]
   error: Error;
   info: Info;
   template: any;
   constructor(url: string) {
+    this.callOrder = [];
+    
+    this.error = {
+      id: 0,
+      message: '',
+    };
+    
     this.info = {
       action: {
         type: null,
@@ -62,10 +70,7 @@ export class Dorm {
         columns: '*',
       },
     };
-    this.error = {
-      id: 0,
-      message: '',
-    };
+    
     poolConnect(url);
     this.template = template.bind(this);
   }
@@ -98,6 +103,7 @@ export class Dorm {
       7: 'Insert data must be an object or array of objects',
       8: 'Cannot have empty array or object of insert data',
       9: 'No returning on select',
+      10: 'No delete without where (use deleteAll to delete all rows)',
     };
     this.error.message = msg[this.error.id];
   }
@@ -107,11 +113,18 @@ export class Dorm {
       this.error.id = 9;
       return true;
     }
+    if (this.info.action.type === 'DELETE' && (!this.info.filter.where || !this.info.filter.condition)) {
+      this.error.id = 10;
+      return true;
+    }
+    return false;
   }
   
   
   /* ------------------------------ INSERT METHOD ----------------------------- */
   insert(arg: any | unknown[]) {
+    this.callOrder.push('INSERT');
+    
     if (typeof arg !== 'object') {
       this.error.id = 7;
       return this;
@@ -188,6 +201,8 @@ export class Dorm {
   
   /* ------------------------------ SELECT METHOD ----------------------------- */
   select(arg?: string) {
+    this.callOrder.push('SELECT');
+    
     if (this.checkErrors(1)) return this;
     
     this.info.action.type = 'SELECT';
@@ -197,6 +212,8 @@ export class Dorm {
   
   /* ------------------------------ UPDATE METHOD ----------------------------- */
   update(obj: any) {
+    this.callOrder.push('UPDATE');
+    
     if (this.checkErrors(1)) return this;
     
     this.info.action.type = 'UPDATE';
@@ -216,16 +233,31 @@ export class Dorm {
     return this;
   }
   
-  /* ------------------------------ DELETE METHOD ----------------------------- */
+  /* ------------------------------ DELETE METHODS ----------------------------- */
   delete(arg?: string) {
+    this.callOrder.push('DELETE');
+    
     if (this.checkErrors(1)) return this;
-
+    
     this.info.action.type = 'DELETE';
+    return this;
+  }
+  
+  deleteAll(arg?: string) {
+    this.callOrder.push('DELETEALL');
+    
+    if (this.checkErrors(1)) return this;
+    
+    this.info.action.type = 'DELETEALL';
+    if (arg) this.info.action.table = arg;
+    
     return this;
   }
   
   /* ------------------------------- DROP METHOD ------------------------------ */
   drop(arg?: string) {
+    this.callOrder.push('DROP');
+    
     if (this.checkErrors(1)) return this;
     
     this.info.action.type = 'DROP';
@@ -235,6 +267,8 @@ export class Dorm {
   
   /* ------------------------------ TABLE METHOD ------------------------------ */
   table(arg: string) {
+    this.callOrder.push('TABLE');
+    
     if (this.checkErrors(2)) return this;
     
     this.info.action.table = arg;
@@ -248,6 +282,8 @@ export class Dorm {
   
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
+    this.callOrder.push('JOIN-INNER');
+    
     if (this.checkErrors(5)) return this;
     
     this.info.join.type = 'INNER';
@@ -256,6 +292,8 @@ export class Dorm {
   }
   
   leftJoin(arg: string) {
+    this.callOrder.push('JOIN-LEFT');
+    
     if (this.checkErrors(5)) return this;
     
     this.info.join.type = 'LEFT';
@@ -264,6 +302,8 @@ export class Dorm {
   }
   
   rightJoin(arg: string) {
+    this.callOrder.push('JOIN-RIGHT');
+    
     if (this.checkErrors(5)) return this;
     
     this.info.join.type = 'RIGHT';
@@ -272,6 +312,8 @@ export class Dorm {
   }
   
   fullJoin(arg: string) {
+    this.callOrder.push('JOIN-FULL');
+    
     if (this.checkErrors(5)) return this;
     
     this.info.join.type = 'FULL';
@@ -288,6 +330,8 @@ export class Dorm {
   
   /* -------------------------------- ON METHOD ------------------------------- */
   on(arg: string) {
+    this.callOrder.push('ON');
+    
     if (this.checkErrors(6)) return this;
     
     this.info.join.on = arg;
@@ -296,6 +340,8 @@ export class Dorm {
   
   /* ------------------------------ WHERE METHOD ------------------------------ */
   where(arg: string) {
+    this.callOrder.push('WHERE');
+    
     if (this.checkErrors(3)) return this;
     
     this.info.filter.where = true;
@@ -305,6 +351,8 @@ export class Dorm {
   
   /* ---------------------------- RETURNING METHOD ---------------------------- */
   returning(arg?: string) {
+    this.callOrder.push('RETURNING');
+    
     if (this.checkErrors(4)) return this;
     
     this.info.returning.active = true;
@@ -319,6 +367,13 @@ export class Dorm {
   /* ------------------------------ RESET METHOD ------------------------------ */
   private _reset() {
     // clear info for future function
+    this.callOrder = [];
+    
+    this.error = {
+      id: 0,
+      message: '',
+    };
+    
     this.info = {
       action: {
         type: null,
@@ -348,20 +403,20 @@ export class Dorm {
     
     if (this.error.id) {
       this.setErrorMessage();
+      const { message } = this.error
       this._reset();
-
+      
       const cbText = callback.toString();
-
+      
       if (isNative(cbText)) {
-        return await callback(Promise.reject(this.error.message));
+        return await callback(Promise.reject(message));
       }
-      return await fail(Promise.reject(this.error.message));
+      return await fail(Promise.reject(message));
     }
     // thanks to David Walsh at https://davidwalsh.name/detect-native-function
     function isNative(fn: any) {
       return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
-
     const result = await query(this.toString());
     
     try {
@@ -373,12 +428,16 @@ export class Dorm {
   
   /* ----------------------------- TOSTRING METHOD ---------------------------- */
   toString() {
+    console.log('order:', this.callOrder);
+    
     this.finalErrorCheck();
     
     if (this.error.id) {
       this.setErrorMessage();
+      const { message } = this.error
+
       this._reset();
-      throw this.error.message;
+      throw message;
     }
     
     
