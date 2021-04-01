@@ -104,6 +104,7 @@ export class Dorm {
       8: 'Cannot have empty array or object of insert data',
       9: 'No returning on select',
       10: 'No delete without where (use deleteAll to delete all rows)',
+      11: 'deleteAll cannot have where'
     };
     this.error.message = msg[this.error.id];
   }
@@ -115,6 +116,10 @@ export class Dorm {
     }
     if (this.info.action.type === 'DELETE' && (!this.info.filter.where || !this.info.filter.condition)) {
       this.error.id = 10;
+      return true;
+    }
+    if (this.info.action.type === 'DELETEALL' && this.info.filter.where) {
+      this.error.id = 11;
       return true;
     }
     return false;
@@ -435,7 +440,6 @@ export class Dorm {
     if (this.error.id) {
       this.setErrorMessage();
       const { message } = this.error
-
       this._reset();
       throw message;
     }
