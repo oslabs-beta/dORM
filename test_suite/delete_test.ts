@@ -19,7 +19,6 @@ const dorm = new Dorm(database);
 const initialSetup = await dorm
 .insert([
   {
-    
     'username':'Golden_Retreiver',
     'nickname': 'golDenR',
     'email':'iamagooddog@dogs.com',
@@ -42,9 +41,6 @@ const initialSetup = await dorm
 .returning()
 .then((data:any) => data.rows)
 .catch(e => e);
-
-console.log('initialSetup', initialSetup);
-
 /*------------ CREATING TESTING ID------------*/
 var updateId = Math.floor(Math.random()*35);
 

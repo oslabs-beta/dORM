@@ -12,27 +12,35 @@ export { query, poolConnect } from '../lib/db-connector.ts';
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url; // paste your url here
+const database = url; // add your url here
 const dorm = new Dorm(database);
-// const createTable = `CREATE TABLE public.dropThis("_id" serial PRIMARY KEY,"username" VARCHAR ( 150 ) NULL,"email" VARCHAR ( 255 ) NULL)WITH (OIDS=FALSE);`
-// const pool = await query(createTable);
+/*------------ CREATING TESTING ID------------*/
+var updateId = Math.floor(Math.random()*35);
 
-Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
-  const tableName = 'user';
-  const condition = `user_id = ${updateId}`
+/*------------ CREATING ENVIRONMENT FOR TEST ------------*/
+const sampleTable = `CREATE TABLE public.dropthis("_id" serial PRIMARY KEY,"username" VARCHAR ( 150 ) NULL,"email" VARCHAR ( 255 ) NULL)WITH (OIDS=FALSE);`
+const tabletoDrop = await dorm.raw(sampleTable);
+
+
+/*------------ TESTING DROP METHOD ------------*/
+const idropThis = await dorm
+  .drop()
+  .from('dropthis')
+  // .returning()
+  .then((data:any)=>{
+    return data.rows;
+  }).catch(e => e);
+
+Deno.test(`all queries to be valid in "DROP" method:`, ()=> {
+  const tableName = 'dropthis';
   const test = dorm
   .drop()
   .from(tableName)
-  .where(condition)
   .returning();
-  console.log('test:',test);
-  assertEquals(invalidDelete, [],'Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.');
-  // assertEquals(test.info.action.type , null, 'Error:Type should not be updated to DELETE');
-  // assertEquals(test.info.action.table , null, 'Error:Table should not be updated to userprofile');
-  // assertEquals(test.info.filter.where , false, `Error:where should not be updated to true`);
-  // assertEquals(test.info.filter.condition , null, `Error:condition should not be updated to ${condition}`);
-  // assertEquals(test.info.returning.active , false, 'Error:Returning should not be updated');  
-  // assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning should not be pdated');
+  assertEquals(idropThis,[],'Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.');
+  assertEquals(test.info.action.type , 'DROP', 'Error:Type should be updated to DROP');
+  assertEquals(test.info.action.table , tableName, `Error:Table should be updated to ${tableName}`);
+  assertEquals(test.info.returning.active , true, 'Error:Returning should be updated to true');  
   
   /*----------------RESETTING INITIAL VALUES----------------*/
   test.toString();
@@ -44,4 +52,19 @@ Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
   assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
-})
+});
+
+const idropThisAfter = await dorm
+  .drop()
+  .select()
+  .from('dropthis')
+  // .returning()
+  .then((data:any)=>{
+    return data.rows;
+  }).catch(e => e);
+
+  console.log('idropThisAfter: ', idropThisAfter);
+
+  Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
+    assertEquals(idropThisAfter, 'No multiple actions','Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.');
+  });

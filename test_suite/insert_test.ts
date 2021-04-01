@@ -11,7 +11,7 @@ import {url} from './test_url.ts'
 */
 
 /*----------------- CONNECTING TO THE DATABASE -----------------*/
-const database = url;
+const database = url; 
 const dorm = new Dorm(database);
 
 /*------------ CREATING TESTING ID------------*/

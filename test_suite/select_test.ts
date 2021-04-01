@@ -13,7 +13,7 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url;
+const database = url; // add your url here
 const dorm = new Dorm(database);
 
 
