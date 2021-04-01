@@ -12,7 +12,7 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url;
+const database = url; // add your url here
 const dorm = new Dorm(database);
 
 
@@ -31,7 +31,6 @@ const invalidUpdate = await dorm
 .then((data: any) => {
 })
 .catch((e)=> {return false}) 
-console.log(invalidUpdate);
 Deno.test(`all queries to be valid in "UPDATE" method:`,() => {
   assertEquals(invalidUpdate, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`)
 })
@@ -40,7 +39,7 @@ const testUpdateQuery1 = await dorm
 .from('userprofile')
 .where(`user_id=${updateId}`)
 .then((data: any) => {
-  // console.log('Returned data:',data.rows);
+
   return data.rows;
 })
 
@@ -58,11 +57,11 @@ Deno.test(`a single-row query in "UPDATE" method:`, () => {
   .from('userprofile')
   .returning('username')
   assertNotEquals(updateQuery, testUpdateQuery1 , 'Error: the method should work more than one row');
-  // assertEquals(test.info.action.type , 'UPDATE', 'Error:Type is not updated to UPDATE');
-  // assertEquals(test.info.action.columns , `username = 'newDogs', password = 'iLoveDogs'`, `Error:Columns are not updated to username = 'newDogs', password = 'iLoveDogs'`);
-  // assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
-  // assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
-  // assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
+  assertEquals(test.info.action.type , 'UPDATE', 'Error:Type is not updated to UPDATE');
+  assertEquals(test.info.action.columns , `username = 'newDogs', password = 'iLoveDogs'`, `Error:Columns are not updated to username = 'newDogs', password = 'iLoveDogs'`);
+  assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
+  assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
+  assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
 
   /*----------------RESETTING INITIAL VALUES----------------*/
    test.toString();
@@ -81,7 +80,6 @@ const testUpdateQuery2 = await dorm
 .from('userprofile')
 .where(`user_id <= ${updateId}`)
 .then((data: any) => {
-  // console.log('Returned data:',data.rows);
   return data.rows;
 })
 
@@ -91,7 +89,6 @@ const multipleRowsQuery = await dorm
 .where(`user_id <= ${updateId}`)
 .returning()
 .then((data: any) => {
-  // console.log(data.rows);
   return data;
 })
 
@@ -100,11 +97,11 @@ Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   .from('userprofile')
   .returning('username');
   assertNotEquals(multipleRowsQuery, testUpdateQuery2, `Error:${updateId} rows was not updated `);
-  // assertEquals(test.info.action.type , 'UPDATE', 'Error:Type is not updated to UPDATE');
-  // assertEquals(test.info.action.columns , `username = 'Dogs', password = 'ihave8Dogs'`, `column is not updated to username = 'Dogs', password = 'ihave8Dogs'`);
-  // assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
-  // assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
-  // assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
+  assertEquals(test.info.action.type , 'UPDATE', 'Error:Type is not updated to UPDATE');
+  assertEquals(test.info.action.columns , `username = 'Dogs', password = 'ihave8Dogs'`, `column is not updated to username = 'Dogs', password = 'ihave8Dogs'`);
+  assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
+  assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
+  assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
 
   /*----------------RESETTING INITIAL VALUES----------------*/
   test.toString();
@@ -166,7 +163,6 @@ const edgeCase1 = await dorm
   edgeCaseErrors.case1=error
   return error
 })
-console.log('This is edgeCase1:',edgeCase1)
 
 Deno.test(`multiple actions called in "UPDATE" method:`,() => {
   assertEquals(edgeCase1 , edgeCaseErrors.case1, `Error:only one action/method should be allowed in 'UPDATE' method`);

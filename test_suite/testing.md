@@ -4,12 +4,12 @@
 
 - [ ] Go to your terminal and verify that you can run the psql command:
 - [ ] Invoke `psql -d <url from elephantSQL> -f ./test_suite/db_test_postgres_create.sql`. This will open the connection to your database and execute the SQL statements that will create tables in your database and populate them with rows of data. Make sure you let the script run all the way through. It will take a minute or two.
-- [ ] please create a userprofile table before testing it if you use your own database.
+- [ ] please add your database url in the url in the file you want to run.
       _(will be updating this part after adding create table method.)_
 
 ## Running all tests at once:
 
-- Invoke `deno test --allow-net --unstable` in your terminal. Make sure to check deno version to be latest version to run the test.
+- Invoke `deno test --allow-net --unstable ./test_suite/main_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
 ### Select test file is completed. Testing includes the following:
 
