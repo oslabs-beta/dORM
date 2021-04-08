@@ -286,6 +286,14 @@ export class Dorm {
     
     if (this.checkErrors(2)) return this;
     
+    const joinList = this.info.join;
+    // if(joinList.length){
+    //   joinList.forEach(el => {
+    //     if(!el.table) el.table = arg;
+    //   })
+    //   return this;
+    // }
+
     this.info.action.table = arg;
     return this;
   }
@@ -318,7 +326,7 @@ export class Dorm {
     
     if (this.checkErrors(5)) return this;
     
-    this.info.join.push({type:'INNER JOIN'})  
+    this.info.join.push({type:'INNER JOIN', table: arg})  
     return this;
   }
   
@@ -345,7 +353,7 @@ export class Dorm {
     this.callOrder.push('JOIN-FULL');
     
     if (this.checkErrors(5)) return this;
-    
+
     this.info.join.push({type:'FULL JOIN'})
 
     return this;
@@ -476,9 +484,9 @@ export class Dorm {
     
     let queryTemplate = '';
     if (action) queryTemplate = this.template(action);
-    if (joinList.length) {
+    if (joinList.length !== 0) {
       while(joinList.length) {
-        if(joinList[0].type === 'JOIN'){
+        if(joinList[0].type.includes('JOIN')){
           queryTemplate += this.template('JOIN');
           queryTemplate += this.template('ON');
         }

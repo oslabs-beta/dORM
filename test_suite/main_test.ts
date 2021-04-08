@@ -631,3 +631,64 @@ Deno.test(`all rows query in "DELETE" method:`, ()=> {
 // Deno.test(`multiple actions called in "DELETE" method:`,() => {
 //   assertEquals(edgeCase1 , 'No multiple actions', `Error:only one action/method should be allowed in 'DELETE' method`);
 // });
+
+
+
+/* -------------------------------------------------------------------------- */
+/*                                 Join Method                                */
+/* -------------------------------------------------------------------------- */
+
+let fromTry:any;
+try{
+  fromTry = await dorm
+  .select()
+  .from('people')
+  .join('people_in_films')
+  .on('people._id = people_in_films.person_id');
+}
+catch(err){
+  console.log('Error:', err);
+}
+
+console.log('Single Join Query: ', `SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
+// console.log('fromTry: ', fromTry.rows[fromTry.rows.length-1]);
+// QUERY COMPLETED BUT THE RETURNING DATA IS NOT EQUAL
+
+const fromRaw = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
+// console.log('fromRaw: ', fromRaw.rows[fromRaw.rows.length-1]);
+
+Deno.test(`Query completion for single Join in JOIN method:`,  () => {
+  assertEquals(Array.isArray(fromTry.rows), true , 'JOIN query is not completed')
+});
+
+Deno.test(`dORM query vs raw query for single Join in JOIN method:`,  () => {
+  assertEquals(fromRaw.rows, fromTry.rows, 'JOIN query and RAW query should be equal.')
+});
+
+const multiJoinQuery1: any = await dorm
+.select()
+.from('people')
+.join('people_in_films')
+.on('people._id = people_in_films.person_id')
+.join('films')
+.on('people_in_films.film_id = films._id')
+.then((data:any)=> {
+  return data.rows;
+})
+.catch ((err) => {
+  console.log('Error:', err)
+})
+console.log('multiJoinQuery1: ', multiJoinQuery1[multiJoinQuery1.length-1]);
+
+const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
+
+console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
+
+
+Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
+  assertEquals(Array.isArray(multiJoinQuery1), true , 'JOIN query is not completed')
+});
+
+Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
+  assertEquals(fromRaw2.rows, multiJoinQuery1, 'JOIN query and RAW query should be equal.')
+});

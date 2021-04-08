@@ -9,7 +9,7 @@ export function template(this: Dorm, arg: string): string {
       'DELETE': `DELETE FROM ${this.info.action.table}`,
       'DELETEALL': `DELETE FROM ${this.info.action.table}`,
       'DROP': `DROP TABLE ${this.info.action.table}`,
-      'JOIN': ` ${this.info.join[0].type} JOIN ${this.info.join[0].table}`,
+      'JOIN': ` ${this.info.join[0].type} ${this.info.join[0].table}`,
       'ON': ` ON ${this.info.join[0].on}`,
       'WHERE': ` WHERE ${this.info.filter.condition}`,
       'RETURNING': ` RETURNING ${this.info.returning.columns}`,

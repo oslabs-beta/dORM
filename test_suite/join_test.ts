@@ -11,9 +11,7 @@ import {url} from './test_url.ts'
 */
 
 /*----------------- CONNECTING TO THE DATABASE -----------------*/
-// const database = url; 
-const starwars = 'postgres://zydvrcsl:f7csg8Xbd1Zmd0ya60mINQ9mkMt-G3Da@queenie.db.elephantsql.com:5432/zydvrcsl'
-// psql -d postgres://zydvrcsl:f7csg8Xbd1Zmd0ya60mINQ9mkMt-G3Da@queenie.db.elephantsql.com:5432/zydvrcsl -f ./test_suite/db_test_starwars_create.sql
+const starwars = url; // put your database url here
 const dorm = new Dorm(starwars);
 
 /*------------ TESTING INSERT METHOD ------------*/
@@ -34,11 +32,13 @@ try{
 catch(err){
   console.log('Error:', err);
 }
-// console.log('fromTry: ', fromTry.rows[0])
+
+console.log('Single Join Query: ', `SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
+// console.log('fromTry: ', fromTry.rows[fromTry.rows.length-1]);
 // QUERY COMPLETED BUT THE RETURNING DATA IS NOT EQUAL
 
 const fromRaw = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
-// console.log('fromRaw: ', fromRaw.rows[0])
+// console.log('fromRaw: ', fromRaw.rows[fromRaw.rows.length-1]);
 
 Deno.test(`Query completion for single Join in JOIN method:`,  () => {
   assertEquals(Array.isArray(fromTry.rows), true , 'JOIN query is not completed')
@@ -61,11 +61,11 @@ const multiJoinQuery1: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-console.log('multiJoinQuery1: ', multiJoinQuery1[0])
+console.log('multiJoinQuery1: ', multiJoinQuery1[multiJoinQuery1.length-1]);
 
 const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
 
-console.log('fromRaw2: ', fromRaw2.rows[0])
+console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
 
 
 Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
@@ -75,36 +75,3 @@ Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
 Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
   assertEquals(fromRaw2.rows, multiJoinQuery1, 'JOIN query and RAW query should be equal.')
 });
-
-/*
-fromTry:  {
-  _id: 1,
-  name: "Luke Skywalker",
-  mass: "77",
-  hair_color: "blond",
-  skin_color: "fair",
-  eye_color: "blue",
-  birth_year: "19BBY",
-  gender: "male",
-  species_id: 1,
-  homeworld_id: 1,
-  height: 172
-} 
-fromRaw:  {
-  _id: 1,
-  name: "Luke Skywalker",
-  mass: "77",
-  hair_color: "blond",
-  skin_color: "fair",
-  eye_color: "blue",
-  birth_year: "19BBY",
-  gender: "male",
-  species_id: 1,
-  homeworld_id: 1,
-  height: 172,
-  person_id: 1,
-  film_id: 1
-}
-
-
-*/
