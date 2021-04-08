@@ -9,11 +9,7 @@ interface Info {
     columns: null | string | string[];
     values: string;
   };
-  join: {
-    type: null | string;
-    table: null | string;
-    on: null | string;
-  };
+  join: Joins[];
   filter: {
     where: boolean;
     condition: null | string;
@@ -22,6 +18,12 @@ interface Info {
     active: boolean;
     columns: string | string[];
   };
+}
+
+interface Joins {
+  type: string;
+  table?: string;
+  on?:  string;
 }
 
 interface Callback {
@@ -56,11 +58,7 @@ export class Dorm {
         columns: '*',
         values: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -75,6 +73,18 @@ export class Dorm {
     this.template = template.bind(this);
   }
   
+  
+  private joinNodes(typeName:string, tableName:string, onValue?:string){
+    return {
+      type: typeName,
+      table: tableName,
+      on: onValue,
+      next: null
+    }
+  }
+  
+  
+  
   /* ------------------------------ ERROR CHECKING ----------------------------- */
   checkErrors(group: number) {
     
@@ -84,9 +94,9 @@ export class Dorm {
     (group === 1 && !!this.info.action.type) ||
     (group === 2 && !!this.info.action.table) ||
     (group === 3 && !!this.info.filter.where) ||
-    (group === 4 && !!this.info.returning.active) ||
-    (group === 5 && !!this.info.join.type) ||
-    (group === 6 && !!this.info.join.on);
+    (group === 4 && !!this.info.returning.active) /*||
+    (group === 5 && !!this.info.join.length) ||
+    (group === 6 && !!this.info.join)*/ ;
     
     if (error) errorObj.id = group;
     return error;
@@ -98,8 +108,8 @@ export class Dorm {
       2: 'No multiple tables',
       3: 'No multiple wheres',
       4: 'No multiple returning',
-      5: 'No multiple joins',
-      6: 'No multiple ons',
+      // 5: 'No multiple joins',
+      // 6: 'No multiple ons',
       7: 'Insert data must be an object or array of objects',
       8: 'Cannot have empty array or object of insert data',
       9: 'No returning on select',
@@ -285,14 +295,30 @@ export class Dorm {
   from = this.table;
   into = this.table;
   
+  /* ------------------------------ AS METHOD ------------------------------ */
+  as(arg:string, target:string){
+    this.callOrder.push('AS');
+    
+    if(this.info.join.length){
+      const joinList = this.info.join;
+    joinList.forEach(el => {
+      if(el.table === target) el.table = arg;
+      if(el.on && el.on.includes(target)) {
+        el.on.split(' ').forEach((word:string) =>  {
+          if(word === target) word = arg;
+        })
+      }
+    })
+    }
+
+  }
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
     this.callOrder.push('JOIN-INNER');
     
     if (this.checkErrors(5)) return this;
     
-    this.info.join.type = 'INNER';
-    this.info.join.table = arg;
+    this.info.join.push({type:'INNER JOIN'})  
     return this;
   }
   
@@ -300,9 +326,8 @@ export class Dorm {
     this.callOrder.push('JOIN-LEFT');
     
     if (this.checkErrors(5)) return this;
-    
-    this.info.join.type = 'LEFT';
-    this.info.join.table = arg;
+
+    this.info.join.push({type:'LEFT JOIN'}) 
     return this;
   }
   
@@ -310,9 +335,9 @@ export class Dorm {
     this.callOrder.push('JOIN-RIGHT');
     
     if (this.checkErrors(5)) return this;
-    
-    this.info.join.type = 'RIGHT';
-    this.info.join.table = arg;
+
+    this.info.join.push({type:'RIGHT JOIN'})
+
     return this;
   }
   
@@ -321,8 +346,8 @@ export class Dorm {
     
     if (this.checkErrors(5)) return this;
     
-    this.info.join.type = 'FULL';
-    this.info.join.table = arg;
+    this.info.join.push({type:'FULL JOIN'})
+
     return this;
   }
   /**
@@ -339,7 +364,10 @@ export class Dorm {
     
     if (this.checkErrors(6)) return this;
     
-    this.info.join.on = arg;
+    const joinList = this.info.join;
+    joinList.forEach(el => {
+      if(!el.on) el.on = arg;
+    })
     return this;
   }
   
@@ -386,11 +414,7 @@ export class Dorm {
         columns: '*',
         values: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -446,15 +470,20 @@ export class Dorm {
     
     
     const action = this.info.action.type;
-    const join = this.info.join.type;
+    const joinList = this.info.join;
     const filter = this.info.filter.where;
     const returning = this.info.returning.active;
     
     let queryTemplate = '';
     if (action) queryTemplate = this.template(action);
-    if (join) {
-      queryTemplate += this.template('JOIN');
-      queryTemplate += this.template('ON');
+    if (joinList.length) {
+      while(joinList.length) {
+        if(joinList[0].type === 'JOIN'){
+          queryTemplate += this.template('JOIN');
+          queryTemplate += this.template('ON');
+        }
+        joinList.shift();
+      }
     }
     if (filter) queryTemplate += this.template('WHERE');
     if (returning) queryTemplate += this.template('RETURNING');
