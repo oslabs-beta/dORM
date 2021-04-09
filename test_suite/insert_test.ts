@@ -11,7 +11,7 @@ import {url} from './test_url.ts'
 */
 
 /*----------------- CONNECTING TO THE DATABASE -----------------*/
-const database = url;
+const database = url; 
 const dorm = new Dorm(database);
 
 /*------------ CREATING TESTING ID------------*/
@@ -56,12 +56,13 @@ Deno.test(`all invalid queries should not work in "INSERT" method:`,() => {
 })
 Deno.test(`single-row query in "INSERT" method:`,  () => {
   const columnName = [{'username':'singleLady'}];
-  const tableName = 'userprofile';
+  const tableName = 'users';
   const returning = '*'
   const test = dorm
   .insert(columnName)
   .from(`${tableName}`)
   .returning(returning);
+  console.log('test.info.action.values: ',test.info.action.values);
   assertEquals(test.info.action.type , 'INSERT', `Error:type is not updated to SELECT`);
   assertEquals(test.info.action.values , `('singleLady')`, `Value is not updated to 'singleLady'`);
   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
@@ -104,6 +105,7 @@ Deno.test(`multiple-rows query in "INSERT" method:`,  () => {
   .insert(columnNames)
   .from(tableName)
   .returning();
+  console.log('test.info.action.values: ',test.info.action.values);
   assertEquals(test.info.action.type , 'INSERT', 'Type is not updated to INSERT');
   assertEquals(test.info.action.columns , 'username, password, email, created_on', `Columns are not updated to username`);
   assertEquals(test.info.action.values , `('Golden_Retreiver', 'golDenR', 'iamagooddog@dogs.com', 'NOW()'), ('Superman', 'IamnotHuman', 'superman@superman.com', 'NOW()'), ('MrBing', 'BingbingBing', 'chandlerbing@bings.com', 'NOW()')`, `Value is not updated to ('Golden_Retreiver', 'golDenR', 'iamagooddog@dogs.com', 'NOW()'), ('Superman', 'IamnotHuman', 'superman@superman.com', 'NOW()'), ('MrBing', 'BingbingBing', 'chandlerbing@bings.com', 'NOW()')`);
@@ -125,7 +127,7 @@ const edgeCase1 = await dorm
 .delete()
 .from('userprofile')
 .then((data: any) => {
-  return data.rows;
+  return data;
 })
 .catch(error => {
   console.log('This is error:',error)
