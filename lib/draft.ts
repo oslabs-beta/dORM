@@ -9,11 +9,7 @@ interface Info {
     columns: null | string | string[];
     values: string;
   };
-  join: {
-    type: null | string;
-    table: null | string;
-    on: null | string;
-  };
+  join: Joins[];
   filter: {
     where: boolean;
     condition: null | string;
@@ -22,6 +18,12 @@ interface Info {
     active: boolean;
     columns: string | string[];
   };
+}
+
+interface Joins {
+  type: string;
+  table?: string;
+  on?: string;
 }
 
 interface Callback {
@@ -37,10 +39,18 @@ interface Error {
 /*                                 DORM CLASS                                 */
 /* -------------------------------------------------------------------------- */
 export class Dorm {
+  callOrder: string[];
   error: Error;
   info: Info;
   template: any;
   constructor(url: string) {
+    this.callOrder = [];
+
+    this.error = {
+      id: 0,
+      message: '',
+    };
+
     this.info = {
       action: {
         type: null,
@@ -48,11 +58,7 @@ export class Dorm {
         columns: '*',
         values: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -62,12 +68,18 @@ export class Dorm {
         columns: '*',
       },
     };
-    this.error = {
-      id: 0,
-      message: '',
-    };
+
     poolConnect(url);
     this.template = template.bind(this);
+  }
+
+  private joinNodes(typeName: string, tableName: string, onValue?: string) {
+    return {
+      type: typeName,
+      table: tableName,
+      on: onValue,
+      next: null,
+    };
   }
 
   /* ------------------------------ ERROR CHECKING ----------------------------- */
@@ -77,9 +89,11 @@ export class Dorm {
       (group === 1 && !!this.info.action.type) ||
       (group === 2 && !!this.info.action.table) ||
       (group === 3 && !!this.info.filter.where) ||
-      (group === 4 && !!this.info.returning.active) ||
-      (group === 5 && !!this.info.join.type) ||
-      (group === 6 && !!this.info.join.on);
+      (group === 4 &&
+        !!this.info.returning
+          .active); /*||
+    (group === 5 && !!this.info.join.length) ||
+    (group === 6 && !!this.info.join)*/
 
     if (error) errorObj.id = group;
     return error;
@@ -91,14 +105,52 @@ export class Dorm {
       2: 'No multiple tables',
       3: 'No multiple wheres',
       4: 'No multiple returning',
-      5: 'No multiple joins',
-      6: 'No multiple ons',
+      // 5: 'No multiple joins',
+      // 6: 'No multiple ons',
+      7: 'Insert data must be an object or array of objects',
+      8: 'Cannot have empty array or object of insert data',
+      9: 'No returning on select',
+      10: 'No delete without where (use deleteAll to delete all rows)',
+      11: 'deleteAll cannot have where',
     };
     this.error.message = msg[this.error.id];
   }
 
+  finalErrorCheck() {
+    if (this.info.action.type === 'SELECT' && this.info.returning.active) {
+      this.error.id = 9;
+      return true;
+    }
+    if (
+      this.info.action.type === 'DELETE' &&
+      (!this.info.filter.where || !this.info.filter.condition)
+    ) {
+      this.error.id = 10;
+      return true;
+    }
+    if (this.info.action.type === 'DELETEALL' && this.info.filter.where) {
+      this.error.id = 11;
+      return true;
+    }
+    return false;
+  }
+
   /* ------------------------------ INSERT METHOD ----------------------------- */
-  insert(arg: unknown[]) {
+  insert(arg: any | unknown[]) {
+    this.callOrder.push('INSERT');
+
+    if (typeof arg !== 'object') {
+      this.error.id = 7;
+      return this;
+    }
+
+    if (Array.isArray(arg)) {
+      if (!arg.length) {
+        this.error.id = 8;
+        return this;
+      }
+    }
+
     if (this.checkErrors(1)) return this;
 
     this.info.action.type = 'INSERT';
@@ -107,25 +159,48 @@ export class Dorm {
 
     const values: unknown[] = [];
 
-    arg.forEach((obj: any) => {
-      Object.keys(obj).forEach((col) => {
-        if (!columns.includes(col)) columns.push(col);
-      });
-    });
+    if (!Array.isArray(arg)) {
+      if (!Object.keys(arg).length) {
+        this.error.id = 8;
+        return this;
+      }
+      const [column, value] = Object.entries(arg)[0];
 
-    arg.forEach((obj: any) => {
-      const vals: any = [];
-      columns.forEach((col) => {
-        if (obj[col] === undefined) {
-          vals.push('null');
-        } else if (typeof obj[col] === 'string') {
-          vals.push(`'${obj[col]}'`);
-        } else {
-          vals.push(obj[col]);
+      columns.push(column);
+      const val: any = [];
+      if (value === undefined) {
+        val.push('null');
+      } else if (typeof value === 'string') {
+        val.push(`'${value}'`);
+      } else {
+        val.push(value);
+      }
+      values.push(val);
+    } else {
+      arg.forEach((obj: any) => {
+        if (!Object.keys(obj).length) {
+          this.error.id = 8;
+          return this;
         }
+        Object.keys(obj).forEach((col) => {
+          if (!columns.includes(col)) columns.push(col);
+        });
       });
-      values.push(vals);
-    });
+
+      arg.forEach((obj: any) => {
+        const vals: any = [];
+        columns.forEach((col) => {
+          if (obj[col] === undefined) {
+            vals.push('null');
+          } else if (typeof obj[col] === 'string') {
+            vals.push(`'${obj[col]}'`);
+          } else {
+            vals.push(obj[col]);
+          }
+        });
+        values.push(vals);
+      });
+    }
 
     this.info.action.columns = columns.join(', ');
 
@@ -139,6 +214,8 @@ export class Dorm {
 
   /* ------------------------------ SELECT METHOD ----------------------------- */
   select(arg?: string) {
+    this.callOrder.push('SELECT');
+
     if (this.checkErrors(1)) return this;
 
     this.info.action.type = 'SELECT';
@@ -148,6 +225,8 @@ export class Dorm {
 
   /* ------------------------------ UPDATE METHOD ----------------------------- */
   update(obj: any) {
+    this.callOrder.push('UPDATE');
+
     if (this.checkErrors(1)) return this;
 
     this.info.action.type = 'UPDATE';
@@ -167,15 +246,31 @@ export class Dorm {
     return this;
   }
 
-  /* ------------------------------ DELETE METHOD ----------------------------- */
+  /* ------------------------------ DELETE METHODS ----------------------------- */
   delete(arg?: string) {
+    this.callOrder.push('DELETE');
+
     if (this.checkErrors(1)) return this;
+
     this.info.action.type = 'DELETE';
+    return this;
+  }
+
+  deleteAll(arg?: string) {
+    this.callOrder.push('DELETEALL');
+
+    if (this.checkErrors(1)) return this;
+
+    this.info.action.type = 'DELETEALL';
+    if (arg) this.info.action.table = arg;
+
     return this;
   }
 
   /* ------------------------------- DROP METHOD ------------------------------ */
   drop(arg?: string) {
+    this.callOrder.push('DROP');
+
     if (this.checkErrors(1)) return this;
 
     this.info.action.type = 'DROP';
@@ -185,7 +280,17 @@ export class Dorm {
 
   /* ------------------------------ TABLE METHOD ------------------------------ */
   table(arg: string) {
+    this.callOrder.push('TABLE');
+
     if (this.checkErrors(2)) return this;
+
+    const joinList = this.info.join;
+    // if(joinList.length){
+    //   joinList.forEach(el => {
+    //     if(!el.table) el.table = arg;
+    //   })
+    //   return this;
+    // }
 
     this.info.action.table = arg;
     return this;
@@ -196,36 +301,58 @@ export class Dorm {
   from = this.table;
   into = this.table;
 
+  /* ------------------------------ AS METHOD ------------------------------ */
+  as(arg: string, target: string) {
+    this.callOrder.push('AS');
+
+    if (this.info.join.length) {
+      const joinList = this.info.join;
+      joinList.forEach((el) => {
+        if (el.table === target) el.table = arg;
+        if (el.on && el.on.includes(target)) {
+          el.on.split(' ').forEach((word: string) => {
+            if (word === target) word = arg;
+          });
+        }
+      });
+    }
+  }
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
+    this.callOrder.push('JOIN-INNER');
+
     if (this.checkErrors(5)) return this;
 
-    this.info.join.type = 'INNER';
-    this.info.join.table = arg;
+    this.info.join.push({ type: 'INNER JOIN', table: arg });
     return this;
   }
 
   leftJoin(arg: string) {
+    this.callOrder.push('JOIN-LEFT');
+
     if (this.checkErrors(5)) return this;
 
-    this.info.join.type = 'LEFT';
-    this.info.join.table = arg;
+    this.info.join.push({ type: 'LEFT JOIN' });
     return this;
   }
 
   rightJoin(arg: string) {
+    this.callOrder.push('JOIN-RIGHT');
+
     if (this.checkErrors(5)) return this;
 
-    this.info.join.type = 'RIGHT';
-    this.info.join.table = arg;
+    this.info.join.push({ type: 'RIGHT JOIN' });
+
     return this;
   }
 
   fullJoin(arg: string) {
+    this.callOrder.push('JOIN-FULL');
+
     if (this.checkErrors(5)) return this;
 
-    this.info.join.type = 'FULL';
-    this.info.join.table = arg;
+    this.info.join.push({ type: 'FULL JOIN' });
+
     return this;
   }
   /**
@@ -238,14 +365,21 @@ export class Dorm {
 
   /* -------------------------------- ON METHOD ------------------------------- */
   on(arg: string) {
+    this.callOrder.push('ON');
+
     if (this.checkErrors(6)) return this;
 
-    this.info.join.on = arg;
+    const joinList = this.info.join;
+    joinList.forEach((el) => {
+      if (!el.on) el.on = arg;
+    });
     return this;
   }
 
   /* ------------------------------ WHERE METHOD ------------------------------ */
   where(arg: string) {
+    this.callOrder.push('WHERE');
+
     if (this.checkErrors(3)) return this;
 
     this.info.filter.where = true;
@@ -255,6 +389,8 @@ export class Dorm {
 
   /* ---------------------------- RETURNING METHOD ---------------------------- */
   returning(arg?: string) {
+    this.callOrder.push('RETURNING');
+
     if (this.checkErrors(4)) return this;
 
     this.info.returning.active = true;
@@ -269,6 +405,13 @@ export class Dorm {
   /* ------------------------------ RESET METHOD ------------------------------ */
   private _reset() {
     // clear info for future function
+    this.callOrder = [];
+
+    this.error = {
+      id: 0,
+      message: '',
+    };
+
     this.info = {
       action: {
         type: null,
@@ -276,11 +419,7 @@ export class Dorm {
         columns: '*',
         values: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -294,23 +433,24 @@ export class Dorm {
 
   /* ------------------------------- THEN METHOD ------------------------------ */
   async then(callback: Callback, fail: Callback = (rej) => rej) {
+    this.finalErrorCheck();
+
     if (this.error.id) {
       this.setErrorMessage();
-
+      const { message } = this.error;
       this._reset();
 
       const cbText = callback.toString();
 
       if (isNative(cbText)) {
-        return await callback(Promise.reject(this.error.message));
+        return await callback(Promise.reject(message));
       }
-      return await fail(Promise.reject(this.error.message));
+      return await fail(Promise.reject(message));
     }
     // thanks to David Walsh at https://davidwalsh.name/detect-native-function
     function isNative(fn: any) {
       return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
-
     const result = await query(this.toString());
 
     try {
@@ -322,16 +462,32 @@ export class Dorm {
 
   /* ----------------------------- TOSTRING METHOD ---------------------------- */
   toString() {
+    console.log('order:', this.callOrder);
+
+    this.finalErrorCheck();
+
+    if (this.error.id) {
+      this.setErrorMessage();
+      const { message } = this.error;
+      this._reset();
+      throw message;
+    }
+
     const action = this.info.action.type;
-    const join = this.info.join.type;
+    const joinList = this.info.join;
     const filter = this.info.filter.where;
     const returning = this.info.returning.active;
 
     let queryTemplate = '';
     if (action) queryTemplate = this.template(action);
-    if (join) {
-      queryTemplate += this.template('JOIN');
-      queryTemplate += this.template('ON');
+    if (joinList.length !== 0) {
+      while (joinList.length) {
+        if (joinList[0].type.includes('JOIN')) {
+          queryTemplate += this.template('JOIN');
+          queryTemplate += this.template('ON');
+        }
+        joinList.shift();
+      }
     }
     if (filter) queryTemplate += this.template('WHERE');
     if (returning) queryTemplate += this.template('RETURNING');

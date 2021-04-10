@@ -15,8 +15,7 @@ CREATE TABLE post(
 	created_on TIMESTAMP  NULL,
   last_update TIMESTAMP ,
 user_id INT NOT NULL,
-FOREIGN KEY (user_id)
-      REFERENCES userprofile (user_id)
+
 );
 CREATE TABLE delete(
   user_id serial PRIMARY KEY,
@@ -55,7 +54,19 @@ VALUES
 
 
 
+const username = [res.locals.user._id]; // save Github username on req.body
+  const statement = `SELECT p.*, i1.frontend, i1.backend FROM interests AS i1 INNER JOIN interests AS i2 ON i1.frontend = i2.frontend OR i1.backend = i2.backend INNER JOIN people AS p ON i1._id = p._id WHERE i2._id = $1`;
+const username = [res.locals.user._id];
+  const statement = `SELECT p.*, i1.frontend, i1.backend FROM interests AS i1 INNER JOIN interests AS i2 ON i1.frontend = i2.frontend OR i1.backend = i2.backend INNER JOIN people AS p ON i1._id = p._id WHERE i2._id = $1`;
 
 
 create psql database
-psql -d <url from elephantSQL> -f starwars_postgres_create.sql
+psql -d <url from elephantSQL> -f ./test_suite/db_test_postgres_create.sql
+
+Simple setup from the scratch
+
+Simple query
+Complex query possible (real query)
+Rawrr function / toString
+Promise then method/async await
+Error-handling if it works

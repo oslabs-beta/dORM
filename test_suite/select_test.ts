@@ -13,7 +13,7 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url;
+const database = url; // add your url here
 const dorm = new Dorm(database);
 
 
@@ -47,22 +47,21 @@ Deno.test(`all queries to be valid in "SELECT" method:`,() => {
   assertEquals(invalidSelect, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`) 
 })
 Deno.test(`single-column query in "SELECT" method:`, () => {
-  const columnName = 'username';
   const tableName = 'userprofile';
   const condition = 'user_id = 2'
-
-  const test = dorm
-  .select(`${columnName}`)
-  .from(`${tableName}`)
-  .where(`${condition}`);
+  
+  const test = dorm.select().from('userprofile').where('user_id = 2');
   assertEquals(test.info.action.type , 'SELECT', `Error:type is not updated to SELECT`);
-  assertEquals(test.info.action.columns , columnName, `Error:column/columns are updated to ${columnName}`);
+  assertEquals(test.info.action.columns , '*', `Error:column/columns are updated to *`);
   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
-  assertEquals(test.info.filter.condition , `${condition}`, `Error:condition is not updated to ${condition}`);
+  assertEquals(test.info.filter.condition ,condition, `Error:condition is not updated to ${condition}`);
+
 
   /*----------------RESETTING INITIAL VALUES----------------*/
-  test.toString();
+  const testQuery = test.toString();
+
+  assertEquals(testQuery , `SELECT * FROM userprofile WHERE user_id = 2`, 'Error:Querybuilder is returning INVALID query string!!');
   assertEquals(test.info.action.type , null, 'Error:Type is not reset after query');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset after query');
   assertEquals(test.info.action.table , null, 'Error:Table is not reset after query');
@@ -73,9 +72,9 @@ Deno.test(`single-column query in "SELECT" method:`, () => {
 Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   const columnName = 'username, email';
   const tableName = 'userprofile';
-  const condition = 'user_id = 4'
+  const condition = 'user_id = 1'
 
-  const test =  dorm.select(`${columnName}`).from(`${tableName}`).where(`${condition}`);
+  const test =  dorm.select(columnName).from(tableName).where(condition);
   assertEquals(test.info.action.type , 'SELECT', 'Error:Type is not updated to SELECT');
   assertEquals(test.info.action.columns , columnName, `Error:column/columns are updated to ${columnName}`);
   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
@@ -83,7 +82,9 @@ Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   assertEquals(test.info.filter.condition , `${condition}`, `Error:condition is not updated to ${condition}`);
   
   /*----------------RESETTING INITIAL VALUES----------------*/
-  test.toString();
+  const testQuery = test.toString();
+
+  assertEquals(testQuery , `SELECT username, email FROM userprofile WHERE user_id = 1`, 'Error:Querybuilder is returning INVALID query string!!');
   assertEquals(test.info.action.type , null, 'Error:Type is not reset after query');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
   assertEquals(test.info.action.table , null, 'Error:Table is not reset after query');
@@ -99,14 +100,13 @@ const edgeCase1 = await dorm
 .delete()
 .from('userprofile')
 .then((data: any) => {
-  return data.rows;
+  return data;
 })
 .catch(error => {
   console.log('This is error:',error)
   edgeCaseErrors.case1=error
   return error
-})
-console.log('This is edgeCase1:',edgeCase1)
+});
 
 Deno.test(`multiple actions called in "SELECT" method:`,() => {
   assertEquals(edgeCase1 , edgeCaseErrors.case1, `Error:only one action/method should be allowed in 'SELECT' method`);

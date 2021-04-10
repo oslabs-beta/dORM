@@ -12,7 +12,7 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url;
+const database = url; // add your url here
 const dorm = new Dorm(database);
 
 
@@ -31,7 +31,6 @@ const invalidUpdate = await dorm
 .then((data: any) => {
 })
 .catch((e)=> {return false}) 
-console.log(invalidUpdate);
 Deno.test(`all queries to be valid in "UPDATE" method:`,() => {
   assertEquals(invalidUpdate, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`)
 })
@@ -40,7 +39,7 @@ const testUpdateQuery1 = await dorm
 .from('userprofile')
 .where(`user_id=${updateId}`)
 .then((data: any) => {
-  // console.log('Returned data:',data.rows);
+
   return data.rows;
 })
 
@@ -81,7 +80,6 @@ const testUpdateQuery2 = await dorm
 .from('userprofile')
 .where(`user_id <= ${updateId}`)
 .then((data: any) => {
-  // console.log('Returned data:',data.rows);
   return data.rows;
 })
 
@@ -91,7 +89,6 @@ const multipleRowsQuery = await dorm
 .where(`user_id <= ${updateId}`)
 .returning()
 .then((data: any) => {
-  // console.log(data.rows);
   return data;
 })
 
@@ -159,14 +156,13 @@ const edgeCase1 = await dorm
 .delete()
 .from('userprofile')
 .then((data: any) => {
-  return data.rows;
+  return data;
 })
 .catch(error => {
   console.log('This is error:',error)
   edgeCaseErrors.case1=error
   return error
 })
-console.log('This is edgeCase1:',edgeCase1)
 
 Deno.test(`multiple actions called in "UPDATE" method:`,() => {
   assertEquals(edgeCase1 , edgeCaseErrors.case1, `Error:only one action/method should be allowed in 'UPDATE' method`);
