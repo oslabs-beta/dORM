@@ -66,5 +66,3 @@ MAKING ALL BUILDERS INTUITIVE
 // SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
 
 deno run --allow-net --unstable ./lib/usertest.ts
-
-deno run --allow-net --unstable --allow-env --allow-read ./demoFolder/demo.ts
