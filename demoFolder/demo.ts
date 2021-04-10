@@ -4,7 +4,7 @@ import { config } from '../deps.ts';
 const env = config();
 
 const url = `postgres://${env.USERNAME}:${env.PASSWORD}@ziggy.db.elephantsql.com:5432/${env.USERNAME}`;
-
+console.log(url);
 const dorm = new Dorm(url);
 
 /* -------------------------------------------------------------------------- */
@@ -24,8 +24,31 @@ const dorm = new Dorm(url);
 //   .catch((e) => e);
 
 // const raw = await dorm.raw('SELECT * FROM people')
-// const rawr = await dorm.rawrr('SELECT * FROM people');
-// console.log(rawr.rows[0]);
+// const rawr = await dorm.rawrr(
+//   "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
+// );
+// const rawr = await dorm.rawrr(
+//   "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'people'"
+// );
+
+const rawr = await dorm.raw(
+  'SELECT tc.constraint_name, tc.table_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints AS tc JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name ORDER BY tc.table_name'
+);
+// async function inner(input: any) {
+//   const arr = [];
+//   const result = [];
+//   for (let i = 0; i < input.length; i++) {
+//     arr.push(input[i].table_name);
+//   }
+//   for (let i = 0; i < arr.length; i++) {
+//     const temp = await dorm.rawrr(
+//       `SELECT tc.table_schema, tc.table_name, kcu.column_name, ccu.table_name AS foreign_table_name, ccu.column_name AS foreign_column_name FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.constraint_column_usage ccu ON ccu.constraint_name = tc.constraint_name WHERE constraint_type = 'FOREIGN KEY' AND ccu.table_name=${arr[i]}`
+//     );
+//     result.push(temp);
+//   }
+//   return result;
+// }
+console.log(rawr.rows);
 
 // dorm.delete().from('people').where('_id = 91');
 
