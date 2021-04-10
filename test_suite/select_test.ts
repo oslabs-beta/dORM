@@ -23,14 +23,15 @@ var updateId = Math.floor(Math.random()*35);
 /*------------ TESTING SELECT METHOD ------------*/
 const selectQuery = await dorm
 .select()
-.from('userprofile')
-.where('user_id=1')
+.from('people')
+.where('_id=1')
 .then((data: any) => {
   return data.rows;
 })
 .catch((e)=> {throw e})
+console.log('selectQuery :', selectQuery)
 Deno.test(`connection to the database:`, () => {
-  assertNotEquals(selectQuery,undefined, 'connect should be returning a query.');
+  assertEquals(selectQuery,undefined, 'connect should be returning a query.');
 });
 Deno.test(`"SELECT" method:`, () => {
   assertNotEquals(selectQuery,undefined, `Error:the method should return a query result.`);
