@@ -279,37 +279,6 @@ export class Dorm {
   from = this.table;
   into = this.table;
   
-  /* ------------------------------ AS METHOD ------------------------------ */
-  // as(arg:string, target:string){
-  //   this.callOrder.push('AS');
-    
-  //   if(this.info.join.length){
-  //     const joinList = this.info.join;
-  //     joinList.forEach(el => {
-  //       if(el.table === target) el.table = arg;
-  //       if(el.on && el.on.includes(target)) {
-  //         el.on.split(' ').forEach((word:string) =>  {
-  //           if(word === target) word = arg;
-  //         })
-  //       }
-  //     })
-  //   }
-
-  //   if(this.info.action.table === target) this.info.action.table = arg;
-  //   if(Array.isArray(this.info.action.columns)){
-  //     this.info.action.columns.forEach(el => {
-  //       if(el === target) el = arg;
-  //     })
-  //   }
-  //   if(this.info.action.columns === target) this.info.action.columns = arg;
-  //   if(this.info.filter.condition?.includes(target)){
-  //     let condition = this.info.filter.condition;
-  //     while(condition.includes(target)){
-  //       condition = condition.replace(target, arg);
-  //     }
-  //   }
-  //   return this;
-  // }
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
     this.callOrder.push('JOIN-INNER');
