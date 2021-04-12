@@ -431,7 +431,7 @@ const deleteOneQuery = await dorm
   return data.rows;
 }).catch(e => e); // []
 
-console.log('deleteOneQuery:', deleteOneQuery);
+
 const testDeleteQuery1 = await dorm
 .select()
 .from('dropthis')
