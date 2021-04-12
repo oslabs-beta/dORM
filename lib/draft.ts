@@ -55,7 +55,7 @@ export class Dorm {
       action: {
         type: null,
         table: null,
-        columns: '*', // {origin: height, as: h}
+        columns: '*',
         values: '',
       },
       join: [],
