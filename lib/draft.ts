@@ -71,24 +71,9 @@ export class Dorm {
     
     poolConnect(url);
     this.template = template.bind(this);
-  }
-  
-  
-  private joinNodes(typeName:string, tableName:string, onValue?:string){
-    return {
-      type: typeName,
-      table: tableName,
-      on: onValue,
-      next: null
-    }
-  }
-  
-  
-  
+  }  
   /* ------------------------------ ERROR CHECKING ----------------------------- */
-  checkErrors(group: number) {
-    
-    
+  checkErrors(group: number) { 
     const errorObj = this.error;
     const error =
     (group === 1 && !!this.info.action.type) ||
@@ -443,7 +428,7 @@ export class Dorm {
   /* ------------------------------- THEN METHOD ------------------------------ */
   async then(callback: Callback, fail: Callback = (rej) => rej) {
     this.finalErrorCheck();
-    if(this.info.join.length !== 0){
+    if(this.info.join){
       this.info.join.forEach(el => {
         if(!el.on && el.type)
         this.error.id = 6;
@@ -477,7 +462,6 @@ export class Dorm {
   /* ----------------------------- TOSTRING METHOD ---------------------------- */
   toString(){
     console.log('order:', this.callOrder);
-    
     this.finalErrorCheck();
     
     if (this.error.id) {
@@ -486,8 +470,6 @@ export class Dorm {
       this._reset();
       throw message;
     }
-    
-    
     const action = this.info.action.type;
     const joinList = this.info.join;
     const filter = this.info.filter.where;
@@ -495,7 +477,7 @@ export class Dorm {
     
     let queryTemplate = '';
     if (action) queryTemplate = this.template(action);
-    if (joinList.length !== 0) {
+    if (joinList.length) {
       while(joinList.length) {
         if(joinList[0].type.includes('JOIN')){
           queryTemplate += this.template('JOIN');

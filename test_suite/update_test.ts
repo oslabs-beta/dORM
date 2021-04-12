@@ -17,80 +17,75 @@ const dorm = new Dorm(database);
 
 
 /*------------ CREATING TESTING ID------------*/
-var updateId = Math.floor(Math.random()*35);
+var updateId = Math.floor(Math.random()*3);
 
-
-/*------------ TESTING UPDATE METHOD ------------*/
-
-// invalid syntax cases : postgre error
-const invalidUpdate = await dorm
-.update({'user':'newDogs'})
-.from('profile')
-.where('user_id>1')
-.returning()
-.then((data: any) => {
-})
-.catch((e)=> {return false}) 
-Deno.test(`all queries to be valid in "UPDATE" method:`,() => {
-  assertEquals(invalidUpdate, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`)
-})
-const testUpdateQuery1 = await dorm
-.select()
-.from('userprofile')
-.where(`user_id=${updateId}`)
-.then((data: any) => {
-
-  return data.rows;
-})
 
 const updateQuery = await dorm
-.update({'username':'newDogs', 'password': 'iLoveDogs'}).where(`user_id = ${updateId}`)
-.from('userprofile')
+.update({'username':'updatedDogs', 'email': 'updated@dogs.com'})
+.where(`_id = ${updateId}`)
+.table('dropthis')
 .returning()
 .then((data: any) => {
-  return data;
-})
+  return data.rows;
+}).catch(e => e);
+console.log('1:',updateQuery)
 
+const testUpdateQuery1 = await dorm
+.select()
+.table('dropthis')
+.where(`_id=${updateId}`)
+.then((data: any) => {
+  
+  return data.rows;
+}).catch(e => e);
+console.log('2:',testUpdateQuery1)  
+
+/* -------------------- SINGLE ROW QUERY IN UPDATE METHOD ------------------- */
 
 Deno.test(`a single-row query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'newDogs', 'password': 'iLoveDogs'}).where(`user_id = ${updateId+1}`)
-  .from('userprofile')
+  .from('userprofile')  
   .returning('username')
-  assertNotEquals(updateQuery, testUpdateQuery1 , 'Error: the method should work more than one row');
+  assertEquals(updateQuery, testUpdateQuery1 , 'Error: the method should work more than one row');
   assertEquals(test.info.action.type , 'UPDATE', 'Error:Type is not updated to UPDATE');
   assertEquals(test.info.action.columns , `username = 'newDogs', password = 'iLoveDogs'`, `Error:Columns are not updated to username = 'newDogs', password = 'iLoveDogs'`);
+  
+  
   assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
   assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
   assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
-
-  /*----------------RESETTING INITIAL VALUES----------------*/
-   test.toString();
-   assertEquals(test.info.action.type , null, 'Error:Type is not reset');
-   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
-   assertEquals(test.info.action.values , '', 'Error:Values are not reset');
-   assertEquals(test.info.action.table , null, 'Error:Table is not reset');
-   assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
-   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
+  
+  /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+  
+  test.toString();
+  assertEquals(test.info.action.type , null, 'Error:Type is not reset');
+  assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
+  assertEquals(test.info.action.values , '', 'Error:Values are not reset');
+  assertEquals(test.info.action.table , null, 'Error:Table is not reset');
+  assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
+  assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
   
 });
 
 
 const testUpdateQuery2 = await dorm
 .select()
-.from('userprofile')
+.table('userprofile')
 .where(`user_id <= ${updateId}`)
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 const multipleRowsQuery = await dorm
-.update({'username':'Dogs', 'password': 'ihave8Dogs'})
-.from('userprofile')
-.where(`user_id <= ${updateId}`)
+.update({'username':'Dogs', 'email': 'iamnotagooddog@dogs.com'})
+.table('dropthis')
+.where(`_id <= ${updateId}`)
 .returning()
 .then((data: any) => {
   return data;
-})
+}).catch(e => e);
+
+/* ------------------ MULTIPLE ROWS QUERY IN UPDATE METHOD ------------------ */
 
 Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'Dogs', 'password': 'ihave8Dogs'}).where(`user_id <= ${updateId}`)
@@ -102,8 +97,9 @@ Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   assertEquals(test.info.action.table , 'userprofile', 'Error:Table is not updated to userprofile');
   assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
   assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
-
-  /*----------------RESETTING INITIAL VALUES----------------*/
+  
+  /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+  
   test.toString();
   assertEquals(test.info.action.type , null, 'Error:Type is not reset');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
@@ -114,18 +110,21 @@ Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
 
 const testUpdateQuery3 = await dorm
 .select()
-.from('userprofile')
+.table('dropthis')
 .then((data: any) => {
   return data.rows;
-})
+}).catch(e => e);
 
 const allRowsUpdateQuery = await dorm
-.update({'username':'restarted', 'password': 'iamADog'})
-.from('userprofile')
+.update({'username':'restarted', 'email': 'iamagoodcat@cats.com'})
+.table('dropthis')
 .returning()
 .then((data: any) => {
   return data;
-})
+}).catch(e => e);
+
+/* --------------- ALL ROWS TO BE UPDATED USING UPDATE METHOD --------------- */
+
 Deno.test(`all rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'restarted', 'password': 'iamADog'})
   .from('userprofile')
@@ -137,7 +136,8 @@ Deno.test(`all rows query in "UPDATE" method:`, () => {
   assertEquals(test.info.returning.active , true, 'Error:Returning is not updated');  
   assertEquals(test.info.returning.columns , 'username', 'Error:Columns in Returning is not reset');
   
-  /*----------------RESETTING INITIAL VALUES----------------*/
+  /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+  
   test.toString();
   assertEquals(test.info.action.type , null, 'Error:Type is not reset');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
@@ -145,25 +145,5 @@ Deno.test(`all rows query in "UPDATE" method:`, () => {
   assertEquals(test.info.action.table , null, 'Error:Table is not reset');
   assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
-  
 });
 
-const edgeCaseErrors ={
-  case1 : '',
-};
-const edgeCase1 = await dorm
-.insert([{'user':'newDogs'}])
-.delete()
-.from('userprofile')
-.then((data: any) => {
-  return data;
-})
-.catch(error => {
-  console.log('This is error:',error)
-  edgeCaseErrors.case1=error
-  return error
-})
-
-Deno.test(`multiple actions called in "UPDATE" method:`,() => {
-  assertEquals(edgeCase1 , edgeCaseErrors.case1, `Error:only one action/method should be allowed in 'UPDATE' method`);
-})
