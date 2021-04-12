@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 
 /*
 *@insert
@@ -11,7 +11,12 @@ import {url} from './test_url.ts'
 */
 
 /*----------------- CONNECTING TO THE DATABASE -----------------*/
-const database = url; 
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
 
 /*------------ CREATING TESTING ID------------*/
@@ -31,7 +36,9 @@ const insertSelectQuery1 = await dorm
   return data.rows;
 })
 
-/* ----------------------- VALIDATION OF INSERT METHOD ---------------------- */
+/* -------------------------------------------------------------------------- */
+/*                         VALIDATION OF INSERT METHOD                        */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`all queries to be valid in "INSERT" method:`, () => {
   assertNotEquals(insertQuery, undefined, 'Error:the method should return a query result.')
@@ -51,7 +58,9 @@ Deno.test(`all invalid queries should not work in "INSERT" method:`,() => {
   assertEquals(invalidInsert, 'No multiple actions', `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`)
 })
 
-/* -------------------- SINGLE ROW QUERY IN INSERT METHOD ------------------- */
+/* -------------------------------------------------------------------------- */
+/*                      SINGLE ROW QUERY IN INSERT METHOD                     */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`single-row query in "INSERT" method:`,  () => {
   const columnName = [{'username':'singleLady'}];
@@ -74,7 +83,9 @@ Deno.test(`single-row query in "INSERT" method:`,  () => {
   assertEquals(test.info.action.values , '', 'Error:Value is not reset after query');
 });
 
-/* ------------------ MULTIPLE ROWS QUERY IN INSERT METHOD ------------------ */
+/* -------------------------------------------------------------------------- */
+/*                    MULTIPLE ROWS QUERY IN INSERT METHOD                    */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`multiple-rows query in "INSERT" method:`,  () => {
   const columnNames = [

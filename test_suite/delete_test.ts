@@ -1,7 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
-
+import { config } from '../deps.ts';
 /*
 *@select
 *Invalid 
@@ -12,7 +11,11 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url;
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
 
 /*-------- CREATING NEW DATA TO PERFORM ALL DELETE TASK --------*/
@@ -61,8 +64,10 @@ const insertToUser = await dorm.raw(initialSetup3);
 /*------------ CREATING TESTING ID------------*/
 var updateId = Math.floor(Math.random()*20);
 
-/*------------ TESTING DELETE METHOD ------------*/
 
+/* -------------------------------------------------------------------------- */
+/*                            QUERY VALIDATION TEST                           */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -80,6 +85,7 @@ Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning should be pdated');
   
   /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+
   test.toString();
   assertEquals(test.info.action.type , null, 'Error:Type is not reset');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
@@ -110,7 +116,9 @@ const testDeleteQuery1 = await dorm
   return data.rows;
 }).catch(e => e); // []
 
-/* ----------------------- SINGLE ROW QUERY IN DELETE ----------------------- */
+/* -------------------------------------------------------------------------- */
+/*                         SINGLE ROW QUERY IN DELETE                         */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`single-row query in "DELETE" method:`, ()=> {
   const tableName = 'userprofile';
@@ -156,7 +164,9 @@ const testDeleteQuery2 = await dorm
   return data.rows;
 }).catch(e => e);
 
-/* ------------------ MULTIPLE ROWS QUERY IN DELETE METHOD ------------------ */
+/* -------------------------------------------------------------------------- */
+/*                    MULTIPLE ROWS QUERY IN DELETE METHOD                    */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -203,9 +213,11 @@ const testDeleteQuery3 = await dorm
   return data.rows;
 }).catch(e => e);
 
-/* ---------------------- DELETING ALL ROWS IN DELETE ---------------------- */
+/* -------------------------------------------------------------------------- */
+/*                         DELETING ALL ROWS IN DELETE                        */
+/* -------------------------------------------------------------------------- */
 
-Deno.test(`all rows query in "DELETE" method:`, ()=> {
+Deno.test(`all rows cannot be deleted in "DELETE" method:`, () => {
   const tableName = 'users';
   const condition = ``
   const test = dorm

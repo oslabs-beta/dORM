@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 
 /*
 *@select
@@ -12,7 +12,12 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url; // add your url here
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
 
 
@@ -40,7 +45,9 @@ const testUpdateQuery1 = await dorm
 }).catch(e => e);
 console.log('2:',testUpdateQuery1)  
 
-/* -------------------- SINGLE ROW QUERY IN UPDATE METHOD ------------------- */
+/* -------------------------------------------------------------------------- */
+/*                      SINGLE ROW QUERY IN UPDATE METHOD                     */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`a single-row query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'newDogs', 'password': 'iLoveDogs'}).where(`user_id = ${updateId+1}`)
@@ -85,7 +92,9 @@ const multipleRowsQuery = await dorm
   return data;
 }).catch(e => e);
 
-/* ------------------ MULTIPLE ROWS QUERY IN UPDATE METHOD ------------------ */
+/* -------------------------------------------------------------------------- */
+/*                    MULTIPLE ROWS QUERY IN UPDATE METHOD                    */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'Dogs', 'password': 'ihave8Dogs'}).where(`user_id <= ${updateId}`)
@@ -123,7 +132,9 @@ const allRowsUpdateQuery = await dorm
   return data;
 }).catch(e => e);
 
-/* --------------- ALL ROWS TO BE UPDATED USING UPDATE METHOD --------------- */
+/* -------------------------------------------------------------------------- */
+/*                 ALL ROWS TO BE UPDATED USING UPDATE METHOD                 */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`all rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'restarted', 'password': 'iamADog'})

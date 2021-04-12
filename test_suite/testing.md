@@ -9,49 +9,61 @@
 
 ## Running all tests at once:
 
-- Invoke `deno test --allow-net --unstable ./test_suite/main_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+- Invoke `deno test --allow-net --allow-read --unstable ./test_suite/main_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+
+- [x] Select method test
+- [x] Insert method test
+- [x] Update method test
+- [x] Delete method test
+- [x] Drop method test
+- [x] Join method test
 
 ### Select test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/select_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/select_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
-- [x] Invalid query checking
-- [x] Single-column query checking
-- [x] Multiple-column query checking
-- [x] The whole table select query checking
-- [x] Only one method for each query checking
+- [x] Query Validation test
+- [x] Single-column query test
+- [x] Multiple-column query test
+- [x] The whole table select query test
+- [x] Multiple actions validation test
 
 ### Insert test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/insert_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/insert_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
-- [x] Invalid query checking
-- [x] Single-row query checking
-- [x] Multiple-rows query checking
-- [x] The whole table insert query checking
+- [x] Query Validation test
+- [x] Single-row query test
+- [x] Multiple-rows query test
 
 ### Update test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/update_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/update_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
-- [x] ALL queries to be valid checking
-- [x] Single-row query checking
-- [x] Multiple-rows query checking
-- [x] The whole table update query checking
+- [x] Single-row query test
+- [x] Multiple-rows query test
+- [x] The whole table update query test
 
 ### Delete test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/delete_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/delete_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
-- [x] ALL queries to be valid checking
-- [x] Single-row query checking
-- [x] Multiple-rows query checking
-- [x] Deleting all rows of the table query checking
+- [x] Query Validation test
+- [x] Single-row delete query test
+- [x] Multiple-rows delete query test
+- [x] Delete all rows using dorm.delete() test
+
+### Drop test file is completed. Testing includes the following:
+
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/drop_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+
+- [x] Query Validation test
 
 ### Join test file is completed. Testing includes the following:
 
-Invoke `deno test --allow-net --unstable ./test_suite/join_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
+Invoke `deno test --allow-net --allow-read --unstable ./test_suite/join_test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
-- [x] ALL queries to be valid checking
-- [x] Single-join query checking
-- [x] Multiple-joins query checking
+- [x] Two table Join test
+- [x] Multiple-tables Join test
+- [x] Without on condition test
+- [x] Calling on without Table test

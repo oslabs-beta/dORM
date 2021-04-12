@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 export { query, poolConnect } from '../lib/db-connector.ts';
 /*
 *@select
@@ -12,8 +12,14 @@ export { query, poolConnect } from '../lib/db-connector.ts';
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url; // add your url here
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
+
 /*------------ CREATING TESTING ID------------*/
 var updateId = Math.floor(Math.random()*35);
 
@@ -26,7 +32,9 @@ const idropThis = await dorm
   return data.rows;
 }).catch(e => e);
 
-/* ------------------------- VALIDATION TEST IN DROP ------------------------ */
+/* -------------------------------------------------------------------------- */
+/*                           VALIDATION TEST IN DROP                          */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`all queries to be valid in "DROP" method:`, ()=> {
   const tableName = 'dropthis';

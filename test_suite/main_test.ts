@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 
 /* ------------------------------ TESTING SCOPE ----------------------------- */
 
@@ -8,7 +8,12 @@ import {url} from './test_url.ts'
 * @basic_cases {Query Completion, Data update,}
 * @edge_cases {Invalid strings, multiple methods, postgre error return, error handling}
 */
-const database = url; // add your url here
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
 
 /* --------------------------- CREATING TESTING ID -------------------------- */
@@ -532,7 +537,7 @@ const testDeleteQuery3 = await dorm
 
 /* ---------------------- DELETING ALL ROWS IN DELETE ---------------------- */
 
-Deno.test(`all rows query in "DELETE" method:`, ()=> {
+Deno.test(`all rows cannot be deleted in "DELETE" method:`, ()=> {
   const tableName = 'users';
   const condition = ``
   const test = dorm
