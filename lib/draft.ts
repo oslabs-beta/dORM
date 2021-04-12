@@ -1,5 +1,6 @@
 import { query, poolConnect } from './db-connector.ts';
 import { template } from './sql-template.ts';
+import { validate } from './validate-strings.ts';
 
 /* ----------------------------- TYPE INTERFACE ----------------------------- */
 interface Info {
@@ -7,7 +8,8 @@ interface Info {
     type: null | string;
     table: null | string;
     columns: null | string | string[];
-    values: string;
+    values: unknown[];
+    valuesParam: string;
   };
   join: {
     type: null | string;
@@ -54,7 +56,8 @@ export class Dorm {
         type: null,
         table: null,
         columns: '*',
-        values: '',
+        values: [],
+        valuesParam: '',
       },
       join: {
         type: null,
@@ -78,7 +81,6 @@ export class Dorm {
   /* ------------------------------ ERROR CHECKING ----------------------------- */
   checkErrors(group: number) {
     
-    
     const errorObj = this.error;
     const error =
     (group === 1 && !!this.info.action.type) ||
@@ -101,10 +103,14 @@ export class Dorm {
       5: 'No multiple joins',
       6: 'No multiple ons',
       7: 'Insert data must be an object or array of objects',
-      8: 'Cannot have empty array or object of insert data',
+      8: 'Cannot have empty array/object of insert/update data',
       9: 'No returning on select',
       10: 'No delete without where (use deleteAll to delete all rows)',
-      11: 'deleteAll cannot have where'
+      11: 'deleteAll cannot have where',
+      12: 'Invalid on clause',
+      13: 'Invalid where clause',
+      98: 'Invalid tables (cannot contain quotes)',
+      99: 'Invalid columns (cannot contain quotes)',
     };
     this.error.message = msg[this.error.id];
   }
@@ -122,6 +128,17 @@ export class Dorm {
       this.error.id = 11;
       return true;
     }
+    
+    if(!validate.columnsTables(this.info.action.table) || !validate.columnsTables(this.info.join.table)) {
+      this.error.id = 98;
+      return true;
+    }
+    
+    if (!validate.columnsTables(this.info.action.columns) || !validate.columnsTables(this.info.returning.columns)) {
+      this.error.id = 99;
+      return true;
+    }
+    
     return false;
   }
   
@@ -160,9 +177,9 @@ export class Dorm {
       columns.push(column);
       const val: any = [];
       if (value === undefined) {
-        val.push('null');
-      } else if (typeof value === 'string') {
-        val.push(`'${value}'`);
+        val.push(null);//val.push('null');
+        // } else if (typeof value === 'string') {
+        //   val.push(`'${value}'`);
       } else {
         val.push(value);
       }
@@ -179,13 +196,18 @@ export class Dorm {
         });
       });
       
+      if (!validate.columnsTables(columns)) {
+        this.error.id = 99;
+        return this;
+      }
+      
       arg.forEach((obj: any) => {
         const vals: any = [];
         columns.forEach((col) => {
           if (obj[col] === undefined) {
-            vals.push('null');
-          } else if (typeof obj[col] === 'string') {
-            vals.push(`'${obj[col]}'`);
+            vals.push(null);// vals.push('null');
+            // } else if (typeof obj[col] === 'string') {
+            //   vals.push(`'${obj[col]}'`);
           } else {
             vals.push(obj[col]);
           }
@@ -196,9 +218,18 @@ export class Dorm {
     
     this.info.action.columns = columns.join(', ');
     
-    values.forEach((data: any, index: number) => {
-      const tail = index === values.length - 1 ? '' : ', ';
-      this.info.action.values += `(${data.join(', ')})${tail}`;
+    // create parameter strings
+    this.info.action.values = values.flat();
+    let paramCount = 0;
+    const valuesBound = values.map((el: any) => el.map((ele: any) => {
+      paramCount++;
+      return `$${paramCount}`
+    }
+    )); 
+    
+    valuesBound.forEach((data: any, index: number) => {
+      const tail = index === valuesBound.length - 1 ? '' : ', ';
+      this.info.action.valuesParam += `(${data.join(', ')})${tail}`;
     });
     
     return this;
@@ -212,6 +243,7 @@ export class Dorm {
     
     this.info.action.type = 'SELECT';
     if (arg) this.info.action.columns = arg;
+    
     return this;
   }
   
@@ -221,17 +253,24 @@ export class Dorm {
     
     if (this.checkErrors(1)) return this;
     
+    if (!Object.keys(obj).length || Array.isArray(obj)) {
+      this.error.id = 8;
+      return this;
+    }
+    
+    if (!validate.columnsTables(Object.keys(obj))) {
+      this.error.id = 99;
+      return this;
+    }
+    
     this.info.action.type = 'UPDATE';
     this.info.action.columns = '';
     
     Object.keys(obj).forEach((col, index) => {
-      let str = `${col} = `;
+      const str = `${col} = $${index + 1}`;
       
-      if (typeof obj[col] === 'string') {
-        str += `'${obj[col]}'`; // string
-      } else {
-        str += `${obj[col]}`; // number, null, boolean
-      }
+      this.info.action.values.push(obj[col]);
+      
       const tail = index === Object.keys(obj).length - 1 ? '' : ', ';
       this.info.action.columns += `${str + tail}`;
     });
@@ -245,6 +284,8 @@ export class Dorm {
     if (this.checkErrors(1)) return this;
     
     this.info.action.type = 'DELETE';
+    if (arg) this.info.action.table = arg;
+    
     return this;
   }
   
@@ -339,7 +380,17 @@ export class Dorm {
     
     if (this.checkErrors(6)) return this;
     
-    this.info.join.on = arg;
+    const validated = validate.onWhere(arg);
+    
+    if (validated === 'Error') {
+      this.error.id = 12;
+      return this;
+    }
+    
+    const params = validate.insertParams(validated.tokens, this.info.action.values.length + 1);
+    this.info.action.values.push(...validated.values);
+    
+    this.info.join.on = params.join(' ');
     return this;
   }
   
@@ -349,8 +400,19 @@ export class Dorm {
     
     if (this.checkErrors(3)) return this;
     
+    const validated = validate.onWhere(arg);
+    
+    if (validated === 'Error') {
+      this.error.id = 13;
+      return this;
+    }
+    
     this.info.filter.where = true;
-    this.info.filter.condition = arg;
+    
+    const params = validate.insertParams(validated.tokens, this.info.action.values.length + 1);
+    this.info.action.values.push(...validated.values);
+    
+    this.info.filter.condition = params.join(' ');
     return this;
   }
   
@@ -384,7 +446,8 @@ export class Dorm {
         type: null,
         table: null,
         columns: '*',
-        values: '',
+        values: [],
+        valuesParam: '',
       },
       join: {
         type: null,
@@ -418,16 +481,31 @@ export class Dorm {
       }
       return await fail(Promise.reject(message));
     }
-    // thanks to David Walsh at https://davidwalsh.name/detect-native-function
-    function isNative(fn: any) {
-      return /\{\s*\[native code\]\s*\}/.test('' + fn);
+    
+    let result: any;
+    try{
+      const params = this.info.action.values
+      result = await query(this.toString(), params);
+    } catch(e) {
+      this._reset();
+      
+      const cbText = callback.toString();
+      
+      if (isNative(cbText)) {
+        return await callback(Promise.reject(e));
+      }
+      return await fail(Promise.reject(e));
     }
-    const result = await query(this.toString());
     
     try {
       return await callback(result);
     } catch (error) {
       throw error;
+    }
+    
+    // thanks to David Walsh at https://davidwalsh.name/detect-native-function
+    function isNative(fn: any) {
+      return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
   }
   
@@ -444,13 +522,13 @@ export class Dorm {
       throw message;
     }
     
-    
     const action = this.info.action.type;
     const join = this.info.join.type;
     const filter = this.info.filter.where;
     const returning = this.info.returning.active;
     
     let queryTemplate = '';
+    
     if (action) queryTemplate = this.template(action);
     if (join) {
       queryTemplate += this.template('JOIN');
@@ -460,15 +538,31 @@ export class Dorm {
     if (returning) queryTemplate += this.template('RETURNING');
     
     console.log('dORM QUERY STRING: ', queryTemplate);
-    
+    console.log('values array: ', this.info.action.values);
     this._reset();
     
     return queryTemplate;
   }
   
+  
+  toObj() {
+    const values = this.info.action.values;
+    const text = this.toString();
+    return {
+      text,
+      values,
+    };
+  }
+  /**
+  * Alias for toObj method
+  */
+  toObject = this.toObj;
+  
+  
+  
   /* ------------------------------ RAW METHOD ------------------------------ */
-  async raw(arg: string) {
-    return await query(arg);
+  async raw(arg: string, vals: unknown[] = []) {
+    return await query(arg, vals);
   }
   rawr = this.raw;
   rawrr = this.raw;

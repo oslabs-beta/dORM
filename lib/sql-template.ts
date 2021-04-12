@@ -3,7 +3,7 @@ import { Dorm } from './draft.ts';
 export function template(this: Dorm, arg: string): string {
   return (
     {
-      'INSERT': `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.values}`,
+      'INSERT': `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.valuesParam}`,
       'SELECT': `SELECT ${this.info.action.columns} FROM ${this.info.action.table}`,
       'UPDATE': `UPDATE ${this.info.action.table} SET ${this.info.action.columns}`,
       'DELETE': `DELETE FROM ${this.info.action.table}`,
