@@ -272,7 +272,6 @@ const updateQuery = await dorm
 .then((data: any) => {
   return data.rows;
 }).catch(e => e);
-console.log('1:',updateQuery)
 
 const testUpdateQuery1 = await dorm
 .select()
@@ -282,8 +281,7 @@ const testUpdateQuery1 = await dorm
   
   return data.rows;
 }).catch(e => e);
-console.log('2:',testUpdateQuery1)  
-
+ 
 /* -------------------- SINGLE ROW QUERY IN UPDATE METHOD ------------------- */
 
 Deno.test(`a single-row query in "UPDATE" method:`, () => {
@@ -651,9 +649,6 @@ catch(err){
   console.log('Error:', err);
 }
 
-console.log('Single Join Query: ', `SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
-
-
 const fromRaw = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
 
 /* ---------------------------- SINGLE JOIN TEST ---------------------------- */
@@ -679,11 +674,9 @@ const multiJoinQuery1: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-console.log('multiJoinQuery1: ', multiJoinQuery1[multiJoinQuery1.length-1]);
 
 const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
 
-console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
 
 /* --------------------------- MULTIPLE JOIN TEST --------------------------- */
 
