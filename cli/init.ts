@@ -1,73 +1,27 @@
-// import { parse } from 'https://deno.land/std/flags/mod.ts';
-// import { resolve } from 'https://deno.land/std/path/mod.ts';
-import {
-  emptyDir,
-  ensureDir,
-  ensureFile,
-  ensureDirSync,
-  ensureFileSync,
-} from 'https://deno.land/std/fs/mod.ts';
+import { config } from '../deps.ts';
 
-// async function main(args: string[]) {
-//   const {
-//     type,
-//     name,
-//     not,
-//     help,
-//     _: [dir = '.'],
-//   } = parse(args);
+const env = config();
 
-//   const dirFullPath = resolve(Deno.cwd(), String(dir));
-//   let includeFiles = true;
-//   let includeDirs = true;
-//   let types = type ? (Array.isArray(type) ? type : [type]) : ['f', 'd'];
-
-//   if (!types.includes('f')) {
-//     includeFiles = false;
-//   }
-
-//   if (!types.includes('d')) {
-//     includeDirs = false;
-//   }
-
-//   const options = {
-//     maxDepth: 2,
-//     includeFiles,
-//     includeDirs,
-//     followSymlinks: false,
-//     skip: [/node_modules/g],
-//   };
-
-//   for await (const entry of walk(dirFullPath, options)) {
-//     console.log(entry.path);
-//   }
-// }
-
-// main(Deno.args);
-/**
- *
- */
 const text = `
+# Inserted by 'dORM init':
 #--------------------------------------------------------------------------
-#                 DORM: PUT YOUR POSTGRES DATABASE URL HERE                
+#                 DORM: PUT YOUR POSTGRES DATABASE URL HERE               |
 #--------------------------------------------------------------------------
 
-databaseURL = ''
+# dORM supports the native connection string format for PostgreSQL.
+
+dorm_databaseURL='postgresql://USERNAME:PASSWORD@localhost:5432/DATABASENAME?schema=public'
 
 `;
 
-const writeEnv = Deno.writeTextFile('dorm.env', text, { append: true });
-// ensureDirSync('./dorm');
-// const write = Deno.writeTextFile('./dorm/schema.dorm', text);
-
-// ensureDirSync('./models'); //.then(() => console.log('han dump'));
-
-// write = Deno.writeTextFile('./models/model.ts', text);
-
-writeEnv.then(() => console.log('DORM: .evn file edited.'));
-
-// deno run -A --unstable https://denoland/x/dorm/init.ts --> make env and dorm file
-
-// **USER IS GOING TO INPUT DATABASE URL JUST LIKE PRISMA
-
-// deno run -A --unstable hhtps://denoland/x/dorm/generate.ts
+// Case 1: when user does not have .env file
+// Case 2: when use does have .env file but does not have dorm setting
+if (!env.dorm_databaseURL) {
+  const writeEnv = Deno.writeTextFile('.env', text, { append: true });
+  writeEnv.then(() => console.log('DORM: .evn file edited.'));
+} else {
+  // Case 3: when user does have .env file and also dorm setting
+  console.log(
+    'DORM: .env file already have a dorm_databaseURL environment variable'
+  );
+}
