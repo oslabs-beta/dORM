@@ -3,6 +3,7 @@ import { config } from '../deps.ts';
 const env = config();
 
 const text = `
+
 # Inserted by 'dORM init':
 #--------------------------------------------------------------------------
 #                 DORM: PUT YOUR POSTGRES DATABASE URL HERE               |
@@ -11,6 +12,9 @@ const text = `
 # dORM supports the native connection string format for PostgreSQL.
 
 dorm_databaseURL='postgresql://USERNAME:PASSWORD@localhost:5432/DATABASENAME?schema=public'
+
+# Please run the following command in your terminal to generate model : 
+#    deno run -A --unstable https://deno.land/x/dORM/models/generate.ts
 
 `;
 
