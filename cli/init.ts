@@ -44,21 +44,27 @@ import {
 // }
 
 // main(Deno.args);
+/**
+ *
+ */
 const text = `
-PUT YOUR DAMN DATABASE URL HERE
+#--------------------------------------------------------------------------
+#                 DORM: PUT YOUR POSTGRES DATABASE URL HERE                
+#--------------------------------------------------------------------------
 
+databaseURL = ''
 
 `;
 
-const writeEnv = Deno.writeTextFile('.env', text);
-ensureDirSync('./dorm');
-const write = Deno.writeTextFile('./dorm/schema.dorm', text);
+const writeEnv = Deno.writeTextFile('dorm.env', text, { append: true });
+// ensureDirSync('./dorm');
+// const write = Deno.writeTextFile('./dorm/schema.dorm', text);
 
-ensureDirSync('./models'); //.then(() => console.log('han dump'));
+// ensureDirSync('./models'); //.then(() => console.log('han dump'));
 
-write = Deno.writeTextFile('./models/model.ts', text);
+// write = Deno.writeTextFile('./models/model.ts', text);
 
-write.then(() => console.log('file created'));
+writeEnv.then(() => console.log('DORM: .evn file edited.'));
 
 // deno run -A --unstable https://denoland/x/dorm/init.ts --> make env and dorm file
 
