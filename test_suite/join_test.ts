@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 
 /*
 *@join
@@ -11,15 +11,21 @@ import {url} from './test_url.ts'
 */
 
 /*----------------- CONNECTING TO THE DATABASE -----------------*/
-const starwars = url; // put your database url here
-const dorm = new Dorm(starwars);
+
+const env = config();
+
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
+const dorm = new Dorm(database);
 
 /*------------ TESTING INSERT METHOD ------------*/
 
-const expectedQuery1 = `SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`;
-
-const expectedQuery2 = `SELECT "people"."_id", "people"."name", "people"."mass", "people"."hair_color", "people"."skin_color", "people"."eye_color", "people"."birth_year", "people"."gender", "people"."species_id", "people"."homeworld_id", "people"."height", "people_in_films"."_id" AS "people_in_films._id", "people_in_films"."person_id" AS "people_in_films.person_id", "people_in_films"."film_id" AS "people_in_films.film_id", "people_in_films->film"."_id" AS "people_in_films.film._id", "people_in_films->film"."title" AS "people_in_films.film.title", "people_in_films->film"."episode_id" AS "people_in_films.film.episode_id", "people_in_films->film"."opening_crawl" AS "people_in_films.film.opening_crawl", "people_in_films->film"."director" AS "people_in_films.film.director", "people_in_films->film"."producer" AS "people_in_films.film.producer", "people_in_films->film"."release_date" AS "people_in_films.film.release_date" FROM "public"."people" AS "people" LEFT OUTER JOIN "public"."people_in_films" AS "people_in_films" ON "people"."_id" = "people_in_films"."person_id" LEFT OUTER JOIN "public"."films" AS "people_in_films->film" ON "people_in_films"."film_id" = "people_in_films->film"."_id"`;
-
+/* -------------------------------------------------------------------------- */
+/*                            TWO TABLE JOIN METHOD                           */
+/* -------------------------------------------------------------------------- */
 
 let fromTry:any;
 try{
@@ -33,12 +39,8 @@ catch(err){
   console.log('Error:', err);
 }
 
-console.log('Single Join Query: ', `SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
-// console.log('fromTry: ', fromTry.rows[fromTry.rows.length-1]);
-// QUERY COMPLETED BUT THE RETURNING DATA IS NOT EQUAL
-
 const fromRaw = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN people_in_films ON people._id = people_in_films.person_id`);
-// console.log('fromRaw: ', fromRaw.rows[fromRaw.rows.length-1]);
+
 
 Deno.test(`Query completion for single Join in JOIN method:`,  () => {
   assertEquals(Array.isArray(fromTry.rows), true , 'JOIN query is not completed')
@@ -48,12 +50,16 @@ Deno.test(`dORM query vs raw query for single Join in JOIN method:`,  () => {
   assertEquals(fromRaw.rows, fromTry.rows, 'JOIN query and RAW query should be equal.')
 });
 
+/* -------------------------------------------------------------------------- */
+/*                         MULTIPLE TABLE JOINS METHOD                        */
+/* -------------------------------------------------------------------------- */
+
 const multiJoinQuery1: any = await dorm
 .select()
 .from('people')
 .join('people_in_films')
 .on('people._id = people_in_films.person_id')
-.join('films')
+.leftJoin('films')
 .on('people_in_films.film_id = films._id')
 .then((data:any)=> {
   return data.rows;
@@ -61,7 +67,6 @@ const multiJoinQuery1: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-console.log('multiJoinQuery1: ', multiJoinQuery1[multiJoinQuery1.length-1]);
 
 const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
 
@@ -74,4 +79,45 @@ Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
 
 Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
   assertEquals(fromRaw2.rows, multiJoinQuery1, 'JOIN query and RAW query should be equal.')
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                 WITHOUT ON                                 */
+/* -------------------------------------------------------------------------- */
+
+const multiJoinQuery2: any = await dorm
+.select()
+.from('people')
+.join('people_in_films')
+.then((data:any)=> {
+  return data;
+})
+.catch ((err) => {
+  console.log('Error:', err)
+})
+// console.log('multiJoinQuery2: ', multiJoinQuery2 )
+Deno.test(`Query cannot complete without "ON" condition for two Joins in JOIN method:`,  () => {
+  assertEquals(multiJoinQuery2, undefined , 'JOIN query is not completed')
+});
+
+/* -------------------------------------------------------------------------- */
+/*               CANNOT SPECIFY ON BEFORE JOIN METHOD IS CALLED               */
+/* -------------------------------------------------------------------------- */
+
+const multiJoinQuery3: any = await dorm
+.select()
+.from('people')
+.on('people._id = people_in_films.person_id')
+.join('people_in_films')
+.leftJoin('films')
+.on('people_in_films.film_id = films._id')
+.then((data:any)=> {
+  return data;
+})
+.catch ((err) => {
+  console.log('Error:', err)
+});
+// console.log('multiJoinQuery3: ', multiJoinQuery3 )
+Deno.test(`Query cannot complete without "ON" condition for two Joins in JOIN method:`,  () => {
+  assertEquals(multiJoinQuery3, undefined, 'JOIN query is not completed')
 });
