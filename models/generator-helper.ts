@@ -24,7 +24,7 @@ interface Obj {
  * @param {unknown[]} arr Takes in a resulted query from 'relationships.sql'
  */
 
-function _columnGenerator(obj: Obj) {
+function _columnHelper(obj: Obj) {
   const result: any = {};
 
   if (obj.column_default) result['autoIncrement'] = true;
@@ -47,15 +47,16 @@ function _columnGenerator(obj: Obj) {
   return result;
 }
 
-function _modelGenerator(arr: Obj[]) {
+function _generatorHelper(arr: any) {
   const result: any = {};
-  // let currTable = arr[0].table_name;
 
   // Loop through the columns and make an object for the model
   for (let i = 0; i < arr.length; i++) {
     if (!result[arr[i].table_name]) result[arr[i].table_name] = {};
-    result[arr[i].table_name][arr[i].column_name] = _columnGenerator(arr[i]);
+    result[arr[i].table_name][arr[i].column_name] = _columnHelper(arr[i]);
   }
 
   return result;
 }
+
+export default _generatorHelper;
