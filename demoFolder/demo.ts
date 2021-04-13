@@ -4,7 +4,7 @@ import { config } from '../deps.ts';
 const env = config();
 
 const url = `postgres://${env.USERNAME}:${env.PASSWORD}@ziggy.db.elephantsql.com:5432/${env.USERNAME}`;
-console.log(url);
+
 const dorm = new Dorm(url);
 
 /* -------------------------------------------------------------------------- */
