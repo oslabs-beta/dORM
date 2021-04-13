@@ -22,7 +22,7 @@ Object.keys(databaseTables).forEach((table) => {
     '$1:'
   );
 
-  const modelFileText = `import { Model } from 'https://deno.land/x/dorm';\n\nconst ${table} = new Model('${table}', ${tablePrettier})\n\nexport default ${table};`;
+  const modelFileText = `MODEL IS STILL UNDER CONSTRUCTION SORRY!!\n\nimport { Model } from 'https://deno.land/x/dorm/mod.ts';\n\nconst ${table} = new Model('${table}', ${tablePrettier})\n\nexport default ${table};`;
 
   /**
    * Make directory in the root folder and create model files inside 'dorm' directory
