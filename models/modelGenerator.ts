@@ -1,6 +1,18 @@
 /* ------------------------------- INTERFACES ------------------------------- */
-interface arr {
-  [key: string]: null | string | number;
+interface Obj {
+  table_name: string;
+  table_schema: string;
+  column_name: string;
+  ordinal_position: number;
+  column_default: null | string;
+  is_nullable: string;
+  data_type: string;
+  udt_name: string;
+  is_updatable: string;
+  constraint_name: string | null;
+  constraint_type: string | null;
+  foreign_table_name: string | null;
+  foreign_column_name: string | null;
 }
 
 /**
@@ -12,30 +24,38 @@ interface arr {
  * @param {unknown[]} arr Takes in a resulted query from 'relationships.sql'
  */
 
-function modelGenerator(arr: arr[]) {
-  const result = {}
-  let currTable = arr[0].table_name;
-  let table = {};
+function _columnGenerator(obj: Obj) {
+  const result: any = {};
 
-  for(let i = 0; i < arr.length; i++){
-    
+  if (obj.column_default) result['autoIncrement'] = true;
+
+  result['dataType'] = obj.udt_name;
+
+  obj.is_nullable === 'YES'
+    ? (result['nullable'] = true)
+    : (result['nullable'] = false);
+
+  if (obj.constraint_type === 'PRIMARY KEY') {
+    result['primaryKey'] = true;
+  } else if (obj.constraint_type === 'FOREIGN KEY') {
+    result['reference'] = {
+      table: obj.foreign_table_name,
+      column: obj.foreign_column_name,
+    };
   }
-
 
   return result;
 }
 
+function _modelGenerator(arr: Obj[]) {
+  const result: any = {};
+  // let currTable = arr[0].table_name;
 
-table_name: "vessels_in_films",
-table_schema: "public",
-column_name: "film_id",
-ordinal_position: 3,
-column_default: null,
-is_nullable: "NO",
-data_type: "bigint",
-udt_name: "int8",
-is_updatable: "YES",
-constraint_name: "vessels_in_films_fk1",
-constraint_type: "FOREIGN KEY",
-foreign_table_name: "films",
-foreign_column_name: "_id"
+  // Loop through the columns and make an object for the model
+  for (let i = 0; i < arr.length; i++) {
+    if (!result[arr[i].table_name]) result[arr[i].table_name] = {};
+    result[arr[i].table_name][arr[i].column_name] = _columnGenerator(arr[i]);
+  }
+
+  return result;
+}
