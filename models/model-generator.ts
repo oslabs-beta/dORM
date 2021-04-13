@@ -1,5 +1,5 @@
 import { config } from '../deps.ts';
-import { query, poolConnect } from '../lib/db-connector.ts';
+import { query, poolConnect } from '../lib/db-connectors/pg-connector.ts';
 import generator from './generator-helper.ts';
 
 const env = config();

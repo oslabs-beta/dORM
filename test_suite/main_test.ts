@@ -114,10 +114,8 @@ Deno.test(`single-column query in "SELECT" method:`, () => {
   const test = dorm.select().from('userprofile').where('user_id = 2');
  console.log(' test.info.filter.condition:',  test.info.filter.condition)
   assertEquals(test.info.action.type , 'SELECT', `Error:type is not updated to SELECT`);
-  // assertEquals(test.info.action.columns , '*', `Error:column/columns are updated to *`);
   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
-  // assertEquals(test.info.filter.condition ,condition, `Error:condition is not updated to ${condition}`);
   
   /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
   
@@ -133,28 +131,27 @@ Deno.test(`single-column query in "SELECT" method:`, () => {
 
 /* --------------------- MULTIPLE COLUMNS SELECT METHOD --------------------- */
 
-// Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
-//   const columnName = 'username, email';
-//   const tableName = 'userprofile';
-//   const condition = 'user_id = 1'
+Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
+  const columnName = 'username, email';
+  const tableName = 'userprofile';
+  const condition = 'user_id = 1'
   
-//   const test =  dorm.select(columnName).from(tableName).where(condition);
-//   assertEquals(test.info.action.type , 'SELECT', 'Error:Type is not updated to SELECT');
-//   assertEquals(test.info.action.columns , columnName, `Error:column/columns are updated to ${columnName}`);
-//   assertEquals(test.info.action.table , tableName, `Error:table is not updated to ${tableName}`);
-//   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
-//   assertEquals(test.info.filter.condition , `${condition}`, `Error:condition is not updated to ${condition}`);
+  const test =  dorm.select(columnName).from(tableName).where(condition);
+  assertEquals(test.info.action.type , 'SELECT', 'Error:Type is not updated to SELECT');
+  assertEquals(test.info.action.columns , columnName, `Error:column/columns are updated to ${columnName}`);
+  assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
+
   
-//   /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+  /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
   
-//   const testQuery = test.toString();
-//   assertEquals(testQuery , `SELECT username, email FROM userprofile WHERE user_id = 1`, 'Error:Querybuilder is returning INVALID query string!!');
-//   assertEquals(test.info.action.type , null, 'Error:Type is not reset after query');
-//   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
-//   assertEquals(test.info.action.table , null, 'Error:Table is not reset after query');
-//   assertEquals(test.info.filter.where , false, `Error:where is not reset after query`);
-//   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
-// })
+  const testQuery = test.toString();
+  assertEquals(testQuery , `SELECT username, email FROM userprofile WHERE user_id = 1`, 'Error:Querybuilder is returning INVALID query string!!');
+  assertEquals(test.info.action.type , null, 'Error:Type is not reset after query');
+  assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
+  assertEquals(test.info.action.table , null, 'Error:Table is not reset after query');
+  assertEquals(test.info.filter.where , false, `Error:where is not reset after query`);
+  assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
+})
 
 
 
