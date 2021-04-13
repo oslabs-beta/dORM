@@ -391,7 +391,8 @@ Deno.test(`all rows cannot be deleted in "DELETE" method:`, () => {
         type: null,
         table: null,
         columns: '*',
-        values: '',
+        values: [],
+        valuesParam: '',
       },
       join: [],
       filter: {

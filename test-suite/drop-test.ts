@@ -1,7 +1,7 @@
 import { Dorm } from '../lib/query-builder.ts';
 import { assertEquals, assertNotEquals } from '../deps.ts';
 import { config } from '../deps.ts';
-export { query, poolConnect } from '../lib/db-connector.ts';
+export { query, poolConnect } from '../lib/db-connectors/pg-connector.ts';
 /*
  *@select
  *Invalid
