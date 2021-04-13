@@ -1,7 +1,8 @@
 import { Dorm } from './query-builder.ts';
 
 const url =
-'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
+  'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';
+
 const dorm = new Dorm(url);
 
 // **** SELECT
@@ -31,8 +32,6 @@ const dorm = new Dorm(url);
 //   console.log('Errorrrrr:', e);
 // }
 // }
-
-
 
 // test().catch(e => console.log(e));
 
@@ -100,7 +99,6 @@ const dorm = new Dorm(url);
 //    .catch((e) => console.log('ERRRRRRRRRRRR', e));
 //  console.log('My Test Query:', testQuery);
 
-
 // const testQuery: any = await dorm
 // .select() //'*')
 // .select()
@@ -116,6 +114,5 @@ const dorm = new Dorm(url);
 //     return data;
 //   })
 // .catch(e => console.log('.catch error:', e));
-
 
 // console.log('testQuery:', testQuery.rows[0]);

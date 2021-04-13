@@ -19,7 +19,6 @@ WHERE: WHERE 'condition1' && (condition2 || condition3)
 this.where(condition1).orWhere(condition)
 }
 
-
 SINGLE OBJECT, NON-ARRAY INSERT - done
 ERROR FOR NO RETURNING ON SELECT - done
 
