@@ -205,7 +205,15 @@ WITH (
   OIDS=FALSE
 );
 
-
+CREATE TABLE public.dropthis
+(
+  "_id" serial PRIMARY KEY,
+  "username" VARCHAR ( 150 ) NULL,
+  "email" VARCHAR ( 255 ) NULL
+)
+WITH (
+  OIDS=FALSE
+);
 
 ALTER TABLE public.people ADD CONSTRAINT "people_fk0" FOREIGN KEY ("species_id") REFERENCES  public.species("_id");
 ALTER TABLE public.people ADD CONSTRAINT "people_fk1" FOREIGN KEY ("homeworld_id") REFERENCES  public.planets("_id");

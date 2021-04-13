@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 export { query, poolConnect } from '../lib/db-connector.ts';
 /*
 *@select
@@ -12,24 +12,29 @@ export { query, poolConnect } from '../lib/db-connector.ts';
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url; // add your url here
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
+
 /*------------ CREATING TESTING ID------------*/
 var updateId = Math.floor(Math.random()*35);
-
-/*------------ CREATING ENVIRONMENT FOR TEST ------------*/
-const sampleTable = `CREATE TABLE public.dropthis("_id" serial PRIMARY KEY,"username" VARCHAR ( 150 ) NULL,"email" VARCHAR ( 255 ) NULL)WITH (OIDS=FALSE);`
-const tabletoDrop = await dorm.raw(sampleTable);
 
 
 /*------------ TESTING DROP METHOD ------------*/
 const idropThis = await dorm
-  .drop()
-  .from('dropthis')
-  // .returning()
-  .then((data:any)=>{
-    return data.rows;
-  }).catch(e => e);
+.drop()
+.from('dropthis')
+.then((data:any)=>{
+  return data.rows;
+}).catch(e => e);
+
+/* -------------------------------------------------------------------------- */
+/*                           VALIDATION TEST IN DROP                          */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`all queries to be valid in "DROP" method:`, ()=> {
   const tableName = 'dropthis';
@@ -41,8 +46,8 @@ Deno.test(`all queries to be valid in "DROP" method:`, ()=> {
   assertEquals(test.info.action.type , 'DROP', 'Error:Type should be updated to DROP');
   assertEquals(test.info.action.table , tableName, `Error:Table should be updated to ${tableName}`);
   assertEquals(test.info.returning.active , true, 'Error:Returning should be updated to true');  
-  
-  /*----------------RESETTING INITIAL VALUES----------------*/
+
+  /* ------------------------ RESETTING INITIAL VALUES ------------------------ */
   test.toString();
   assertEquals(test.info.action.type , null, 'Error:Type is not reset');
   assertEquals(test.info.action.columns , '*', 'Error:Columns are not reset');
@@ -54,17 +59,7 @@ Deno.test(`all queries to be valid in "DROP" method:`, ()=> {
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
 });
 
-const idropThisAfter = await dorm
-  .drop()
-  .select()
-  .from('dropthis')
-  // .returning()
-  .then((data:any)=>{
-    return data.rows;
-  }).catch(e => e);
+/* ---------------------- RECREATING THE DROPPED TABLE ---------------------- */
 
-  console.log('idropThisAfter: ', idropThisAfter);
-
-  Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
-    assertEquals(idropThisAfter, 'No multiple actions','Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.');
-  });
+const initialSetup2 = `CREATE TABLE public.dropthis("_id" serial PRIMARY KEY,"username" VARCHAR ( 150 ) NULL,"email" VARCHAR ( 255 ) NULL)WITH (OIDS=FALSE);`
+const tableToDrop = await dorm.raw(initialSetup2);
