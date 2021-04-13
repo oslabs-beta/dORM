@@ -11,13 +11,13 @@ const modelQuery = Deno.readTextFileSync('models/relationships.sql');
 
 const firstQuery = await query(modelQuery);
 
+console.log(firstQuery.rows);
+
 // This is how you stringify
-const tableNames = JSON.stringify(firstQuery.rows);
+// const tableNames = JSON.stringify(firstQuery.rows);
 
 /**
  * Make directory in the root folder and create model files inside 'dorm' directory
  */
-Deno.mkdirSync('./dorm');
-Deno.writeTextFileSync('dorm/model.ts', tableNames);
-
-console.log(tableNames);
+// Deno.mkdirSync('./dorm');
+// Deno.writeTextFileSync('dorm/model.ts', tableNames);

@@ -1,7 +1,7 @@
 SELECT ist.table_name, crt.*
 FROM information_schema.tables AS ist
 LEFT JOIN 
-  (SELECT isc.table_schema, isc.table_name, isc.column_name, isc.is_nullable, isc.data_type, isc.udt_name, isc.is_updatable, 
+  (SELECT isc.table_schema, isc.table_name, isc.column_name, isc.ordinal_position, isc.column_default, isc.is_nullable, isc.data_type, isc.udt_name, isc.is_updatable, 
           pfkt.constraint_name, pfkt.constraint_type, pfkt.foreign_table_name, pfkt.foreign_column_name
     FROM INFORMATION_SCHEMA.COLUMNS AS isc
     LEFT JOIN 
@@ -15,3 +15,4 @@ LEFT JOIN
     ON isc.column_name = pfkt.column_name AND isc.table_name = pfkt.table_name) AS crt
 ON crt.table_name = ist.table_name
 WHERE ist.table_schema='public' AND ist.table_type='BASE TABLE'
+ORDER BY ist.table_name, crt.ordinal_position
