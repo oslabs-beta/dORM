@@ -1,10 +1,10 @@
-import { Dorm } from './draft.ts';
+import { Dorm } from './query-builder.ts';
 
 export function template(this: Dorm, arg: string): string {
   console.log('arg: ', arg);
   return (
     {
-      'INSERT': `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.values}`,
+      'INSERT': `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.valuesParam}`,
       'SELECT': `SELECT ${this.info.action.columns} FROM ${this.info.action.table}`,
       'UPDATE': `UPDATE ${this.info.action.table} SET ${this.info.action.columns}`,
       'DELETE': `DELETE FROM ${this.info.action.table}`,

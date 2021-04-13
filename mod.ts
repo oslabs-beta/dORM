@@ -1,1 +1,1 @@
-export { Dorm } from './lib/draft.ts';
+export { Dorm } from './lib/query-builder.ts';

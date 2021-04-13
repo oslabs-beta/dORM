@@ -1,4 +1,4 @@
-import { Dorm } from '../lib/draft.ts';
+import { Dorm } from '../lib/query-builder.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
 import { config } from '../deps.ts';
 
@@ -59,7 +59,7 @@ const multiJoinQuery1: any = await dorm
 .from('people')
 .leftJoin('films')
 .on('people._id = people_in_films.person_id')
-.join('people_in_films')
+.leftJoin('films')
 .on('people_in_films.film_id = films._id')
 .then((data:any)=> {
   return data.rows;
@@ -67,7 +67,6 @@ const multiJoinQuery1: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-// console.log('multiJoinQuery1: ', multiJoinQuery1);
 const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
 
 // console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
