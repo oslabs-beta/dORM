@@ -72,16 +72,6 @@ export class Dorm {
     poolConnect(url);
     this.template = template.bind(this);
   }
-
-  private joinNodes(typeName: string, tableName: string, onValue?: string) {
-    return {
-      type: typeName,
-      table: tableName,
-      on: onValue,
-      next: null,
-    };
-  }
-
   /* ------------------------------ ERROR CHECKING ----------------------------- */
   checkErrors(group: number) {
     const errorObj = this.error;
@@ -105,8 +95,8 @@ export class Dorm {
       2: 'No multiple tables',
       3: 'No multiple wheres',
       4: 'No multiple returning',
-      // 5: 'No multiple joins',
-      // 6: 'No multiple ons',
+      5: '"On" cannot be called before "JOIN" method',
+      6: 'Condition is needed for JOIN method',
       7: 'Insert data must be an object or array of objects',
       8: 'Cannot have empty array or object of insert data',
       9: 'No returning on select',
@@ -283,15 +273,6 @@ export class Dorm {
     this.callOrder.push('TABLE');
 
     if (this.checkErrors(2)) return this;
-
-    const joinList = this.info.join;
-    // if(joinList.length){
-    //   joinList.forEach(el => {
-    //     if(!el.table) el.table = arg;
-    //   })
-    //   return this;
-    // }
-
     this.info.action.table = arg;
     return this;
   }
@@ -301,22 +282,6 @@ export class Dorm {
   from = this.table;
   into = this.table;
 
-  /* ------------------------------ AS METHOD ------------------------------ */
-  as(arg: string, target: string) {
-    this.callOrder.push('AS');
-
-    if (this.info.join.length) {
-      const joinList = this.info.join;
-      joinList.forEach((el) => {
-        if (el.table === target) el.table = arg;
-        if (el.on && el.on.includes(target)) {
-          el.on.split(' ').forEach((word: string) => {
-            if (word === target) word = arg;
-          });
-        }
-      });
-    }
-  }
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
     this.callOrder.push('JOIN-INNER');
@@ -332,7 +297,7 @@ export class Dorm {
 
     if (this.checkErrors(5)) return this;
 
-    this.info.join.push({ type: 'LEFT JOIN' });
+    this.info.join.push({ type: 'LEFT JOIN', table: arg });
     return this;
   }
 
@@ -341,7 +306,7 @@ export class Dorm {
 
     if (this.checkErrors(5)) return this;
 
-    this.info.join.push({ type: 'RIGHT JOIN' });
+    this.info.join.push({ type: 'RIGHT JOIN', table: arg });
 
     return this;
   }
@@ -351,7 +316,7 @@ export class Dorm {
 
     if (this.checkErrors(5)) return this;
 
-    this.info.join.push({ type: 'FULL JOIN' });
+    this.info.join.push({ type: 'FULL JOIN', table: arg });
 
     return this;
   }
@@ -367,7 +332,8 @@ export class Dorm {
   on(arg: string) {
     this.callOrder.push('ON');
 
-    if (this.checkErrors(6)) return this;
+    if (this.checkErrors(5)) return this;
+    if (this.info.join.length === 0) this.error.id = 5;
 
     const joinList = this.info.join;
     joinList.forEach((el) => {
@@ -434,7 +400,11 @@ export class Dorm {
   /* ------------------------------- THEN METHOD ------------------------------ */
   async then(callback: Callback, fail: Callback = (rej) => rej) {
     this.finalErrorCheck();
-
+    if (this.info.join) {
+      this.info.join.forEach((el) => {
+        if (!el.on && el.type) this.error.id = 6;
+      });
+    }
     if (this.error.id) {
       this.setErrorMessage();
       const { message } = this.error;
@@ -463,7 +433,6 @@ export class Dorm {
   /* ----------------------------- TOSTRING METHOD ---------------------------- */
   toString() {
     console.log('order:', this.callOrder);
-
     this.finalErrorCheck();
 
     if (this.error.id) {
@@ -472,7 +441,6 @@ export class Dorm {
       this._reset();
       throw message;
     }
-
     const action = this.info.action.type;
     const joinList = this.info.join;
     const filter = this.info.filter.where;
@@ -480,7 +448,7 @@ export class Dorm {
 
     let queryTemplate = '';
     if (action) queryTemplate = this.template(action);
-    if (joinList.length !== 0) {
+    if (joinList.length) {
       while (joinList.length) {
         if (joinList[0].type.includes('JOIN')) {
           queryTemplate += this.template('JOIN');

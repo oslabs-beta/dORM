@@ -1,6 +1,6 @@
 import { Dorm } from '../lib/draft.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
-import {url} from './test_url.ts'
+import { config } from '../deps.ts';
 
 /*
 * @select
@@ -13,39 +13,63 @@ import {url} from './test_url.ts'
 */
 
 /*-------- CONNECTING TO THE DATABASE --------*/
-const database = url; // add your url here
+
+const env = config();
+// create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+
+const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
 
 
 /*------------ CREATING TESTING ID------------*/
 var updateId = Math.floor(Math.random()*35);
 
-/*------------ TESTING SELECT METHOD ------------*/
+/* -------------------------------------------------------------------------- */
+/*                            QUERY VALIDATION TEST                           */
+/* -------------------------------------------------------------------------- */
+
 const selectQuery = await dorm
 .select()
-.from('userprofile')
-.where('user_id=1')
+.from('people')
+.where('_id=1')
 .then((data: any) => {
   return data.rows;
 })
 .catch((e)=> {throw e})
+console.log('selectQuery :', selectQuery)
+
+
 Deno.test(`connection to the database:`, () => {
-  assertNotEquals(selectQuery,undefined, 'connect should be returning a query.');
+  assertEquals(Array.isArray(selectQuery), true, 'connect should be returning a query.');
 });
+
+
 Deno.test(`"SELECT" method:`, () => {
-  assertNotEquals(selectQuery,undefined, `Error:the method should return a query result.`);
+  assertEquals(Array.isArray(selectQuery), true, `Error:the method should return a query result.`);
 });
+
+/* -------------------------------------------------------------------------- */
+/*                       MULTIPLE ACTION VALIDATION TEST                      */
+/* -------------------------------------------------------------------------- */
+
 const invalidSelect = await dorm
 .select()
-.from('profile')
-.where('user_id=1')
+.from('people')
+.delete()
+.where('_id=1')
 .then((data: any) => {
   return data.rows;
-}).catch((e)=> {return false})
+}).catch((e)=> {return e})
 
 Deno.test(`all queries to be valid in "SELECT" method:`,() => {
-  assertEquals(invalidSelect, false, `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`) 
+  assertEquals(invalidSelect, 'No multiple actions', `Error:INVALID query found!!!! It should  return an error for invalid query request from Postgres.`) 
 })
+
+/* -------------------------------------------------------------------------- */
+/*                             SINGLE COLUMN QUERY                            */
+/* -------------------------------------------------------------------------- */
+
 Deno.test(`single-column query in "SELECT" method:`, () => {
   const tableName = 'userprofile';
   const condition = 'user_id = 2'
@@ -57,8 +81,8 @@ Deno.test(`single-column query in "SELECT" method:`, () => {
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
   assertEquals(test.info.filter.condition ,condition, `Error:condition is not updated to ${condition}`);
 
+/* ------------------------ RESETTING INITIAL VALUES ------------------------ */
 
-  /*----------------RESETTING INITIAL VALUES----------------*/
   const testQuery = test.toString();
 
   assertEquals(testQuery , `SELECT * FROM userprofile WHERE user_id = 2`, 'Error:Querybuilder is returning INVALID query string!!');
@@ -68,6 +92,10 @@ Deno.test(`single-column query in "SELECT" method:`, () => {
   assertEquals(test.info.filter.where , false, `Error:where is not reset after query`);
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
 })
+
+/* -------------------------------------------------------------------------- */
+/*                         MULTIPLE COLUMNS QUERY TEST                        */
+/* -------------------------------------------------------------------------- */
 
 Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   const columnName = 'username, email';
@@ -81,7 +109,8 @@ Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   assertEquals(test.info.filter.where , true, `Error:where is not updated to true`);
   assertEquals(test.info.filter.condition , `${condition}`, `Error:condition is not updated to ${condition}`);
   
-  /*----------------RESETTING INITIAL VALUES----------------*/
+/* ------------------------ RESETTING INITIAL VALUES ------------------------ */
+
   const testQuery = test.toString();
 
   assertEquals(testQuery , `SELECT username, email FROM userprofile WHERE user_id = 1`, 'Error:Querybuilder is returning INVALID query string!!');
@@ -90,24 +119,4 @@ Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   assertEquals(test.info.action.table , null, 'Error:Table is not reset after query');
   assertEquals(test.info.filter.where , false, `Error:where is not reset after query`);
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
-})
-
-const edgeCaseErrors ={
-  case1 : '',
-};
-const edgeCase1 = await dorm
-.select()
-.delete()
-.from('userprofile')
-.then((data: any) => {
-  return data;
-})
-.catch(error => {
-  console.log('This is error:',error)
-  edgeCaseErrors.case1=error
-  return error
-});
-
-Deno.test(`multiple actions called in "SELECT" method:`,() => {
-  assertEquals(edgeCase1 , edgeCaseErrors.case1, `Error:only one action/method should be allowed in 'SELECT' method`);
 })
