@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from '../deps.ts';
+import { Pool, PoolClient } from '../../deps.ts';
 
 let pool: Pool;
 
@@ -6,13 +6,12 @@ function poolConnect(url: string) {
   pool = new Pool(url, 3);
 }
 
-async function query(str: string, vals: unknown[]) {
+async function query(str: string, vals?: unknown[]) {
   try {
     const client: PoolClient = await pool.connect();
     let dbResult;
 
-    if (vals.length) {
-
+    if (vals && vals.length) {
       dbResult = await client.queryObject({ text: str, args: vals });
     } else {
       dbResult = await client.queryObject(str);
