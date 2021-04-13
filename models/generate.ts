@@ -6,15 +6,18 @@ const env = config();
 const url = env.dorm_databaseURL;
 
 poolConnect(url);
-// const decoder = new TextDecoder('utf-8');
+
 const modelQuery = Deno.readTextFileSync('models/relationships.sql');
-// console.log(modelQuery);
-// First query to retrive all the table names
+
 const firstQuery = await query(modelQuery);
 
-const tableNames = firstQuery.rows;
+// This is how you stringify
+const tableNames = JSON.stringify(firstQuery.rows);
+
+/**
+ * Make directory in the root folder and create model files inside 'dorm' directory
+ */
+Deno.mkdirSync('./dorm');
+Deno.writeTextFileSync('dorm/model.ts', tableNames);
+
 console.log(tableNames);
-
-// Second query to grab data types of the columns for each table
-
-// console.log(test);
