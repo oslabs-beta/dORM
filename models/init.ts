@@ -2,7 +2,7 @@ import { config } from '../deps.ts';
 
 const env = config();
 
-const text = `
+const envFileText = `
 
 # Inserted by 'dORM init':
 #--------------------------------------------------------------------------
@@ -21,7 +21,7 @@ dorm_databaseURL='postgresql://USERNAME:PASSWORD@localhost:5432/DATABASENAME?sch
 // Case 1: when user does not have .env file
 // Case 2: when use does have .env file but does not have dorm setting
 if (!env.dorm_databaseURL) {
-  const writeEnv = Deno.writeTextFile('.env', text, { append: true });
+  const writeEnv = Deno.writeTextFile('.env', envFileText, { append: true });
   writeEnv.then(() => console.log('DORM: .evn file edited.'));
 } else {
   // Case 3: when user does have .env file and also dorm setting

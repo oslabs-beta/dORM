@@ -14,8 +14,7 @@ const informationSchema = await query(modelQuery);
 
 const databaseTables = generator(informationSchema.rows);
 
-Deno.removeSync('./dorm', { recursive: true });
-Deno.mkdirSync('./dorm');
+Deno.mkdirSync('./dorm', { recursive: true });
 
 Object.keys(databaseTables).forEach((table) => {
   const tablePrettier = JSON.stringify(databaseTables[table], null, 2).replace(
@@ -29,4 +28,5 @@ Object.keys(databaseTables).forEach((table) => {
    * Make directory in the root folder and create model files inside 'dorm' directory
    */
   Deno.writeTextFileSync(`dorm/${table}.ts`, modelFileText);
+  console.log(`DORM: created <${table}> model file`);
 });
