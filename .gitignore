@@ -111,7 +111,3 @@ dist
 
 # deno lint
 .vscode/
-
-# demo folder
-# dorm/
-extra.ts
