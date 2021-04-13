@@ -11,19 +11,21 @@ interface Info {
     values: unknown[];
     valuesParam: string;
   };
-  join: {
-    type: null | string;
-    table: null | string;
-    on: null | string;
-  };
+  join: Joins[];
   filter: {
     where: boolean;
-    condition: null | string;
+    condition?: any;
   };
   returning: {
     active: boolean;
     columns: string | string[];
   };
+}
+
+interface Joins {
+  type?: string;
+  table?: string;
+  on?: any;
 }
 
 interface Callback {
@@ -59,11 +61,7 @@ export class Dorm {
         values: [],
         valuesParam: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -76,19 +74,15 @@ export class Dorm {
     
     poolConnect(url);
     this.template = template.bind(this);
-  }
-  
+  }  
   /* ------------------------------ ERROR CHECKING ----------------------------- */
-  checkErrors(group: number) {
-    
+  checkErrors(group: number) { 
     const errorObj = this.error;
     const error =
     (group === 1 && !!this.info.action.type) ||
     (group === 2 && !!this.info.action.table) ||
     (group === 3 && !!this.info.filter.where) ||
-    (group === 4 && !!this.info.returning.active) ||
-    (group === 5 && !!this.info.join.type) ||
-    (group === 6 && !!this.info.join.on);
+    (group === 4 && !!this.info.returning.active);
     
     if (error) errorObj.id = group;
     return error;
@@ -100,8 +94,7 @@ export class Dorm {
       2: 'No multiple tables',
       3: 'No multiple wheres',
       4: 'No multiple returning',
-      5: 'No multiple joins',
-      6: 'No multiple ons',
+      5: 'Number of ONs must equal number of JOINs',
       7: 'Insert data must be an object or array of objects',
       8: 'Cannot have empty array/object of insert/update data',
       9: 'No returning on select',
@@ -129,7 +122,14 @@ export class Dorm {
       return true;
     }
     
-    if(!validate.columnsTables(this.info.action.table) || !validate.columnsTables(this.info.join.table)) {
+    for (const el of this.info.join) {
+      if (!validate.columnsTables(el.table)) {
+        this.error.id = 98;
+        return true;
+      }
+    }
+    
+    if(!validate.columnsTables(this.info.action.table)) {
       this.error.id = 98;
       return true;
     }
@@ -177,9 +177,7 @@ export class Dorm {
       columns.push(column);
       const val: any = [];
       if (value === undefined) {
-        val.push(null);//val.push('null');
-        // } else if (typeof value === 'string') {
-        //   val.push(`'${value}'`);
+        val.push(null);
       } else {
         val.push(value);
       }
@@ -205,9 +203,7 @@ export class Dorm {
         const vals: any = [];
         columns.forEach((col) => {
           if (obj[col] === undefined) {
-            vals.push(null);// vals.push('null');
-            // } else if (typeof obj[col] === 'string') {
-            //   vals.push(`'${obj[col]}'`);
+            vals.push(null);
           } else {
             vals.push(obj[col]);
           }
@@ -316,7 +312,6 @@ export class Dorm {
     this.callOrder.push('TABLE');
     
     if (this.checkErrors(2)) return this;
-    
     this.info.action.table = arg;
     return this;
   }
@@ -329,41 +324,64 @@ export class Dorm {
   /* ------------------------------ JOIN METHODS ------------------------------ */
   join(arg: string) {
     this.callOrder.push('JOIN-INNER');
-    
-    if (this.checkErrors(5)) return this;
-    
-    this.info.join.type = 'INNER';
-    this.info.join.table = arg;
+    const joinList = this.info.join;
+    for (const el of joinList) {
+      if(!el.type) {
+        el.type = 'INNER JOIN';
+        el.table = arg;
+        return this;
+      }
+    }
+    joinList.push({type:'INNER JOIN', table: arg})  
     return this;
   }
   
   leftJoin(arg: string) {
     this.callOrder.push('JOIN-LEFT');
     
-    if (this.checkErrors(5)) return this;
+    const joinList = this.info.join;
+    for (const el of joinList) {
+      if(!el.type) {
+        el.type = 'LEFT JOIN';
+        el.table = arg;
+        return this;
+      }
+    }
     
-    this.info.join.type = 'LEFT';
-    this.info.join.table = arg;
+    joinList.push({type:'LEFT JOIN', table: arg})  
     return this;
   }
   
   rightJoin(arg: string) {
     this.callOrder.push('JOIN-RIGHT');
     
-    if (this.checkErrors(5)) return this;
+    const joinList = this.info.join;
+    for (const el of joinList) {
+      if(!el.type) {
+        el.type = 'RIGHT JOIN';
+        el.table = arg;
+        return this;
+      }
+    }
+    joinList.push({type:'RIGHT JOIN', table: arg})
     
-    this.info.join.type = 'RIGHT';
-    this.info.join.table = arg;
     return this;
   }
   
   fullJoin(arg: string) {
     this.callOrder.push('JOIN-FULL');
     
-    if (this.checkErrors(5)) return this;
+    const joinList = this.info.join;
     
-    this.info.join.type = 'FULL';
-    this.info.join.table = arg;
+    for (const el of joinList) {
+      if(!el.type) {
+        el.type = 'FULL JOIN';
+        el.table = arg;
+        return this;
+      }
+    }
+    joinList.push({type:'FULL JOIN', table: arg})
+    
     return this;
   }
   /**
@@ -378,8 +396,6 @@ export class Dorm {
   on(arg: string) {
     this.callOrder.push('ON');
     
-    if (this.checkErrors(6)) return this;
-    
     const validated = validate.onWhere(arg);
     
     if (validated === 'Error') {
@@ -387,10 +403,15 @@ export class Dorm {
       return this;
     }
     
-    const params = validate.insertParams(validated.tokens, this.info.action.values.length + 1);
-    this.info.action.values.push(...validated.values);
+    const joinList = this.info.join;
+    for (const el of joinList) {
+      if(!el.on) {
+        el.on = validated;
+        return this;
+      }
+    } 
+    joinList.push({on: validated})
     
-    this.info.join.on = params.join(' ');
     return this;
   }
   
@@ -408,11 +429,8 @@ export class Dorm {
     }
     
     this.info.filter.where = true;
+    this.info.filter.condition = validated;
     
-    const params = validate.insertParams(validated.tokens, this.info.action.values.length + 1);
-    this.info.action.values.push(...validated.values);
-    
-    this.info.filter.condition = params.join(' ');
     return this;
   }
   
@@ -449,11 +467,7 @@ export class Dorm {
         values: [],
         valuesParam: '',
       },
-      join: {
-        type: null,
-        table: null,
-        on: null,
-      },
+      join: [],
       filter: {
         where: false,
         condition: null,
@@ -510,8 +524,7 @@ export class Dorm {
   }
   
   /* ----------------------------- TOSTRING METHOD ---------------------------- */
-  toString() {
-    console.log('order:', this.callOrder);
+  toString(){
     
     this.finalErrorCheck();
     
@@ -523,22 +536,47 @@ export class Dorm {
     }
     
     const action = this.info.action.type;
-    const join = this.info.join.type;
+    const joinList = this.info.join;
     const filter = this.info.filter.where;
     const returning = this.info.returning.active;
     
     let queryTemplate = '';
     
     if (action) queryTemplate = this.template(action);
-    if (join) {
-      queryTemplate += this.template('JOIN');
-      queryTemplate += this.template('ON');
+    
+    while(joinList.length) {
+      const el = joinList[0];
+      if (el.type?.includes('JOIN') && el.on) {
+        queryTemplate += this.template('JOIN');
+        
+        const params = validate.insertParams(el.on.tokens, this.info.action.values.length + 1);
+        this.info.action.values.push(...el.on.values);
+        
+        el.on = params.join(' ');
+        queryTemplate += this.template('ON');
+        
+      } else {        
+        this.error.id = 5
+        this.setErrorMessage();
+        const { message } = this.error
+        this._reset();
+        throw message;
+      }
+      joinList.shift();
     }
-    if (filter) queryTemplate += this.template('WHERE');
+    
+    if (this.info.filter.where) {
+      const whereCondition = this.info.filter.condition;
+      const params = validate.insertParams(whereCondition.tokens, this.info.action.values.length + 1);
+      this.info.action.values.push(...whereCondition.values);
+      
+      this.info.filter.condition = params.join(' ');
+      
+      queryTemplate += this.template('WHERE');
+    }
+    
     if (returning) queryTemplate += this.template('RETURNING');
     
-    console.log('dORM QUERY STRING: ', queryTemplate);
-    console.log('values array: ', this.info.action.values);
     this._reset();
     
     return queryTemplate;
@@ -557,7 +595,6 @@ export class Dorm {
   * Alias for toObj method
   */
   toObject = this.toObj;
-  
   
   
   /* ------------------------------ RAW METHOD ------------------------------ */
