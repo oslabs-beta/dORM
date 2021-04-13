@@ -1,12 +1,11 @@
 const validate = {
-  
   onWhere: function (str: string): any {
     const tokens = this.tokenize(str);
-    
+
     if (tokens === 'Error') return tokens;
-    
+
     const values: unknown[] = [];
-    
+
     tokens.forEach((token, i) => {
       if (token === 'true') {
         values.push(true);
@@ -24,34 +23,35 @@ const validate = {
         values.push(token);
         tokens[i] = '$';
       }
-      const parsedInt = parseInt(token)
+      const parsedInt = parseInt(token);
       if (!isNaN(parsedInt)) {
         values.push(parsedInt);
         tokens[i] = '$';
       }
     });
-    
-    return { tokens, values }
+
+    return { tokens, values };
   },
-  
+
   insertParams: function (tokens: string[], currParam: number) {
     tokens.forEach((token, i) => {
-      if (token === '$') tokens[i] = `$${currParam++}`
+      if (token === '$') tokens[i] = `$${currParam++}`;
     });
-    return tokens;    
+    return tokens;
   },
-  
+
   columnsTables: function (arr?: string[] | string | null): boolean {
     if (!arr) return true;
     arr = typeof arr === 'string' ? [arr] : arr;
-    
+
     for (const el of arr) {
       if (typeof el !== 'string') return false;
-      if (el.includes('"') || el.includes("'") || el.includes('\\u')) return false;
+      if (el.includes('"') || el.includes("'") || el.includes('\\u'))
+        return false;
     }
-    return true;    
+    return true;
   },
-  
+
   tokenize: function (str: string) {
     let i = 0;
     const tokens: string[] = [];
@@ -59,20 +59,18 @@ const validate = {
     let insideString = false;
     let readyForString = true;
     let escapeNextChar = false;
-    
+
     while (i < str.length) {
-      
       const char = str[i];
-      
+
       if (escapeNextChar) {
-        if (char.toLowerCase() === 'u') return 'Error'
+        if (char.toLowerCase() === 'u') return 'Error';
         escapeNextChar = false;
         curr += char;
         i++;
         continue;
-      }      
-      
-      
+      }
+
       if (char === "'") {
         if (!readyForString) {
           return 'Error';
@@ -87,18 +85,18 @@ const validate = {
         i++;
         continue;
       }
-      
+
       if (insideString) {
         if (char === '"') return 'Error';
         if (char === '\\') escapeNextChar = true;
-        
+
         curr += char;
         i++;
         continue;
       }
-      
+
       if (char === '\\') return 'Error';
-      
+
       if (char === '"') return 'Error';
 
       // comparison string below includes tab character at index 1
@@ -108,7 +106,7 @@ const validate = {
           tokens.push(curr);
           curr = '';
         }
-        
+
         if ('=()'.includes(char)) tokens.push(char);
       } else {
         curr += char;
@@ -118,10 +116,9 @@ const validate = {
     }
     if (insideString) return 'Error';
     if (curr.length) tokens.push(curr);
-    
-    return tokens;
-  }
-}
 
+    return tokens;
+  },
+};
 
 export { validate };
