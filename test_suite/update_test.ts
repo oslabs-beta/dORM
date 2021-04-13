@@ -1,4 +1,4 @@
-import { Dorm } from '../lib/draft.ts';
+import { Dorm } from '../lib/query-builder.ts';
 import { assertEquals, assertNotEquals} from "../deps.ts";
 import { config } from '../deps.ts';
 

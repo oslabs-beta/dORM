@@ -1,4 +1,4 @@
-import { Dorm } from './draft.ts';
+import { Dorm } from './query-builder.ts';
 
 const url =
   'postgres://jkwfgvzj:lB9v6K93eU1bjY75YaIzW3TnFMN2PlLF@ziggy.db.elephantsql.com:5432/jkwfgvzj';

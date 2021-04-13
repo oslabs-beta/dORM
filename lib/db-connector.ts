@@ -6,10 +6,18 @@ function poolConnect(url: string) {
   pool = new Pool(url, 3);
 }
 
-async function query(str: string) {
+async function query(str: string, vals: unknown[]) {
   try {
     const client: PoolClient = await pool.connect();
-    const dbResult = await client.queryObject(str);
+    let dbResult;
+
+    if (vals.length) {
+
+      dbResult = await client.queryObject({ text: str, args: vals });
+    } else {
+      dbResult = await client.queryObject(str);
+    }
+
     client.release();
     return dbResult;
   } catch (e) {

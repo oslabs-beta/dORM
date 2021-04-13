@@ -66,3 +66,49 @@ MAKING ALL BUILDERS INTUITIVE
 // SELECT \* FROM people LEFT JOIN spices ON people.\_id=spices.\_id
 
 deno run --allow-net --unstable ./lib/usertest.ts
+
+deno run --allow-net --unstable --allow-env --allow-read ./demoFolder/demo.ts
+
+
+
+
+Possible refactor of callOrder:
+
+ callorder: [
+    {
+      action: select,
+      columns: [array of cols],
+    },
+    {
+      table: tablename
+    },
+    {join: jointype,
+      with: jointable
+    },
+    {on: condition
+    },
+    {join:
+      with: jointable
+    },
+    {on: condition}
+  ]
+
+
+Parameterizing notes:
+
+WHERE col1 col2 = val
+
+SELECT col1 col2 col3
+
+.select('col1 col2 col 3')
+[col1, col2, col3]
+
+.select(['hacker ', 'code ', 'like ', 'this ')
+
+SELECT hacker code like this
+
+
+Get table/model info:
+
+SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = (SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE')
+
