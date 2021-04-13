@@ -57,9 +57,9 @@ Deno.test(`dORM query vs raw query for single Join in JOIN method:`,  () => {
 const multiJoinQuery1: any = await dorm
 .select()
 .from('people')
-.join('people_in_films')
-.on('people._id = people_in_films.person_id')
 .leftJoin('films')
+.on('people._id = people_in_films.person_id')
+.join('people_in_films')
 .on('people_in_films.film_id = films._id')
 .then((data:any)=> {
   return data.rows;
@@ -67,10 +67,10 @@ const multiJoinQuery1: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-
+// console.log('multiJoinQuery1: ', multiJoinQuery1);
 const fromRaw2 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
 
-console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
+// console.log('fromRaw2: ', fromRaw2.rows[fromRaw2.rows.length-1]);
 
 
 Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
@@ -82,10 +82,46 @@ Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
 });
 
 /* -------------------------------------------------------------------------- */
+/*                          FLEXIBLITY OF JOINS TEST                          */
+/* -------------------------------------------------------------------------- */
+
+const multiJoinQuery2: any = dorm
+.select()
+.leftJoin('films')
+.join('people_in_films')
+.from('people')
+.on('people._id = people_in_films.person_id')
+.on('people_in_films.film_id = films._id')
+.then((data:any)=> {
+  return data.rows;
+})
+.catch ((err) => {
+  console.log('Error:', err)
+})
+
+// console.log('multiJoinQuery2: ', multiJoinQuery2.info);
+
+
+
+const fromRaw3 = await dorm.rawrr(`SELECT * FROM people LEFT OUTER JOIN "people_in_films" ON people._id = "people_in_films".person_id LEFT OUTER JOIN films ON "people_in_films".film_id = films._id`);
+
+// console.log('fromRaw2: ', fromRaw3.rows[fromRaw2.rows.length-1]);
+
+
+Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
+  assertEquals(Array.isArray(multiJoinQuery2), true , 'JOIN query is not completed')
+});
+
+Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
+  assertEquals(fromRaw2.rows, multiJoinQuery2, 'JOIN query and RAW query should be equal.')
+});
+
+
+/* -------------------------------------------------------------------------- */
 /*                                 WITHOUT ON                                 */
 /* -------------------------------------------------------------------------- */
 
-const multiJoinQuery2: any = await dorm
+const multiJoinQuery3: any = await dorm
 .select()
 .from('people')
 .join('people_in_films')
@@ -95,16 +131,16 @@ const multiJoinQuery2: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 })
-// console.log('multiJoinQuery2: ', multiJoinQuery2 )
+
 Deno.test(`Query cannot complete without "ON" condition for two Joins in JOIN method:`,  () => {
-  assertEquals(multiJoinQuery2, undefined , 'JOIN query is not completed')
+  assertEquals(multiJoinQuery3, undefined , 'JOIN query is not completed')
 });
 
 /* -------------------------------------------------------------------------- */
 /*               CANNOT SPECIFY ON BEFORE JOIN METHOD IS CALLED               */
 /* -------------------------------------------------------------------------- */
 
-const multiJoinQuery3: any = await dorm
+const multiJoinQuery4: any = await dorm
 .select()
 .from('people')
 .on('people._id = people_in_films.person_id')
@@ -117,7 +153,7 @@ const multiJoinQuery3: any = await dorm
 .catch ((err) => {
   console.log('Error:', err)
 });
-// console.log('multiJoinQuery3: ', multiJoinQuery3 )
+
 Deno.test(`Query cannot complete without "ON" condition for two Joins in JOIN method:`,  () => {
-  assertEquals(multiJoinQuery3, undefined, 'JOIN query is not completed')
+  assertEquals(multiJoinQuery4, undefined, 'JOIN query is not completed')
 });
