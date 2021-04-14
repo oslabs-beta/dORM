@@ -11,7 +11,7 @@ import { config } from '../deps.ts';
 
 const env = config();
 // create .env file and add your database inside it. using followin variables USERNAME, PASSWORD, SERVER
-const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}.db.elephantsql.com:5432/${env.USERNAME}`;
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}:5432/${env.USERNAME}`;
 
 const database = URL; // Or you can add your url here
 const dorm = new Dorm(database);
@@ -202,13 +202,11 @@ Deno.test(`multiple-columns query in "SELECT" method:`,   () => {
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
 })
 
-
-
 /* -------------------------------------------------------------------------- */
 /*                                INSERT METHOD                               */
 /* -------------------------------------------------------------------------- */
 
-const insertQuery = dorm
+const insertQuery = await dorm
 .insert([{'username':'newDogs', 'email': 'newdog@dog.com' }])
 .table('dropthis')
 .returning()
@@ -308,6 +306,9 @@ Deno.test(`multiple-rows query in "INSERT" method:`,  () => {
 /*                                UPDATE METHOD                               */
 /* -------------------------------------------------------------------------- */
 
+ 
+/* -------------------- SINGLE ROW QUERY IN UPDATE METHOD ------------------- */
+
 const updateQuery = await dorm
 .update({'username':'updatedDogs', 'email': 'updated@dogs.com'})
 .where(`_id = ${updateId}`)
@@ -325,8 +326,7 @@ const testUpdateQuery1 = await dorm
   
   return data.rows;
 }).catch((e:any) => e);
- 
-/* -------------------- SINGLE ROW QUERY IN UPDATE METHOD ------------------- */
+
 
 Deno.test(`a single-row query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'newDogs', 'password': 'iLoveDogs'}).where(`user_id = ${updateId+1}`)
@@ -350,6 +350,7 @@ test.toString();
 });
 
 
+/* ------------------ MULTIPLE ROWS QUERY IN UPDATE METHOD ------------------ */
 const testUpdateQuery2 = await dorm
 .select()
 .table('userprofile')
@@ -358,7 +359,7 @@ const testUpdateQuery2 = await dorm
   return data.rows;
 }).catch((e:any) => e);
 
-const multipleRowsQuery = dorm
+const multipleRowsQuery = await dorm
 .update({'username':'Dogs', 'email': 'iamnotagooddog@dogs.com'})
 .table('dropthis')
 .where(`_id < ${updateId}`)
@@ -367,7 +368,6 @@ const multipleRowsQuery = dorm
   return data;
 }).catch((e:any) => e);
 
-/* ------------------ MULTIPLE ROWS QUERY IN UPDATE METHOD ------------------ */
 
 Deno.test(`multiple-rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'Dogs', 'password': 'ihave8Dogs'}).where(`user_id <= ${updateId}`)
@@ -391,6 +391,8 @@ const testQuery = test.toString();
 });
 
 
+/* --------------- ALL ROWS TO BE UPDATED USING UPDATE METHOD --------------- */
+
 const allRowsUpdateQuery = await dorm
 .update({'username':'restarted', 'email': 'iamagoodcat@cats.com'})
 .table('dropthis')
@@ -398,8 +400,6 @@ const allRowsUpdateQuery = await dorm
 .then((data: any) => {
   return data.rows;
 }).catch((e:any) => e);
-
-/* --------------- ALL ROWS TO BE UPDATED USING UPDATE METHOD --------------- */
 
 Deno.test(`all rows query in "UPDATE" method:`, () => {
   const test = dorm.update({'username':'restarted', 'password': 'iamADog'})
@@ -455,6 +455,8 @@ Deno.test(`all queries to be valid in "DELETE" method:`, ()=> {
 })
 
 
+/* ----------------------- SINGLE ROW QUERY IN DELETE ----------------------- */
+
 const deleteOneQuery = await dorm
   .delete('dropthis')
   .where(`_id = ${updateId}`)
@@ -466,17 +468,6 @@ const deleteOneQuery = await dorm
   console.log('Error: ', e)
 });
 
-const testDeleteQuery1 = dorm
-.select()
-.from('dropthis')
-.where(`_id = ${updateId}`)
-.then((data: any) => {
-  return data.rows;
-}).catch((e:any) => e); // []
-
-
-
-/* ----------------------- SINGLE ROW QUERY IN DELETE ----------------------- */
 
 Deno.test(`single-row query in "DELETE" method:`, ()=> {
   const tableName = 'userprofile';
@@ -505,7 +496,11 @@ Deno.test(`single-row query in "DELETE" method:`, ()=> {
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
 });
 
-const deleteMultipleQuery = dorm
+
+
+/* ------------------ MULTIPLE ROWS QUERY IN DELETE METHOD ------------------ */
+
+const deleteMultipleQuery = await dorm
 .delete()
 .from('dropthis')
 .where(`_id = ${updateId+1}`)
@@ -513,16 +508,6 @@ const deleteMultipleQuery = dorm
 .then((data:any)=> {
   return data;
 }).catch((e:any) => e);
-
-const testDeleteQuery2 = dorm
-.select()
-.from('dropthis')
-.where(`_id = ${updateId+1}`)
-.then((data: any) => {
-  return data.rows;
-}).catch((e:any) => e);
-
-/* ------------------ MULTIPLE ROWS QUERY IN DELETE METHOD ------------------ */
 
 Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -549,7 +534,9 @@ Deno.test(`multiple-rows query in "DELETE" method:`, ()=> {
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
   assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
-})
+});
+
+/* ---------------------- DELETING ALL ROWS IN DELETE ---------------------- */
 
 const deleteAllQuery = await dorm
 .delete()
@@ -558,10 +545,6 @@ const deleteAllQuery = await dorm
 .then((data:any)=> {
   return data;
 }).catch((e:any) => e);
-
-console.log('deleteAllQuery:', deleteAllQuery);
-
-/* ---------------------- DELETING ALL ROWS IN DELETE ---------------------- */
 
 Deno.test(`all rows cannot be deleted in "DELETE" method:`, ()=> {
   const tableName = 'users';
@@ -616,7 +599,7 @@ Deno.test(`all rows cannot be deleted in "DELETE" method:`, ()=> {
   assertEquals(test.info.filter.condition , null, `Error:condition is not reset after query`);
   assertEquals(test.info.returning.active , false, 'Error:Returning is not reset');  
   assertEquals(test.info.returning.columns , '*', 'Error:Columns in Returning is not reset');
-})
+});
 
 
 
@@ -714,3 +697,26 @@ Deno.test(`Query completion for two Joins in JOIN method:`,  () => {
 Deno.test(`dORM query vs raw query for two Joins in JOIN method:`,  () => {
   assertEquals(fromRaw2.rows, multiJoinQuery1, 'JOIN query and RAW query should be equal.')
 });
+
+/* ----------------------------- FLEXIBLITY TEST ---------------------------- */
+
+const multiJoinQuery3: any = await dorm
+  .select()
+  .from('people')
+  .on('people._id = people_in_films.person_id')
+  .on('people_in_films.film_id = films._id')
+  .where('people_in_films._id < 3')
+  .join('people_in_films')
+  .leftJoin('films')
+  .then((data: any) => {
+    return data.rows[0];
+  })
+  .catch((err) => {
+    console.log('Error:', err);
+  });
+Deno.test(
+  `Query cannot complete without "ON" condition for two Joins in JOIN method:`,
+  () => {
+    assertEquals(multiJoinQuery3.name, "Luke Skywalker", 'JOIN query is not completed');
+  }
+);

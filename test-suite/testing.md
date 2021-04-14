@@ -7,10 +7,17 @@
 - [ ] please add your database url in the url in the file you want to run.
       _(will be updating this part after adding create table method.)_
 
+## Please creat an .env file and add the followings:
+
+You can get your username, passowrd and database_name from your database url as shown in the example:
+const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}:5432/${env.USERNAME}`;
+`USERNAME = <username> PASSWORD = <password> SERVER = <database_name>`
+
 ## Running all tests at once:
 
 - Invoke `deno test --allow-net --allow-read --unstable ./test-suite/main-test.ts` in your terminal. Make sure to check deno version to be latest version to run the test.
 
+- [x] Parameterized query method
 - [x] Select method test
 - [x] Insert method test
 - [x] Update method test
@@ -66,4 +73,4 @@ Invoke `deno test --allow-net --allow-read --unstable ./test-suite/join-test.ts`
 - [x] Two table Join test
 - [x] Multiple-tables Join test
 - [x] Without on condition test
-- [x] Calling on without Table test
+- [x] Flexiblity Test
