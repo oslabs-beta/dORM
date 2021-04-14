@@ -24,7 +24,7 @@ var updateId = 2;
 
 
 const insertQuery = await dorm
-.insert([{'username':'newDogs', 'email': 'newdog@dog.com' }])
+.insert([{'username':'newDogs', email: 'newdog@dog.com' }])
 .table('dropthis')
 .returning()
 .then((data: any) => {
