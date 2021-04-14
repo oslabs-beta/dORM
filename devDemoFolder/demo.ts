@@ -1,11 +1,11 @@
-import { Dorm } from '../mod.ts';
-import { config } from '../deps.ts';
+// import { Dorm } from '../mod.ts';
+// import { config } from '../deps.ts';
 
-const env = config();
+// const env = config();
 
-const url = `postgres://${env.USERNAME}:${env.PASSWORD}@ziggy.db.elephantsql.com:5432/${env.USERNAME}`;
+// const url = `postgres://${env.USERNAME}:${env.PASSWORD}@ziggy.db.elephantsql.com:5432/${env.USERNAME}`;
 
-const dorm = new Dorm(url);
+// const dorm = new Dorm(url);
 
 /* -------------------------------------------------------------------------- */
 /*                                SIMPLE QUERY                                */
@@ -23,7 +23,7 @@ const dorm = new Dorm(url);
 //   .then((data: any) => console.log(data.rows[0]))
 //   .catch((e) => e);
 
-const raw = await dorm.raw('SELECT * FROM people');
+// const raw = await dorm.raw('SELECT * FROM people');
 // const rawr = await dorm.rawrr(
 //   "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'"
 // );
@@ -48,9 +48,11 @@ const raw = await dorm.raw('SELECT * FROM people');
 //   }
 //   return result;
 // }
-console.log(raw);
+// console.log(raw);
 
-// dorm.delete().from('people').where('_id = 91');
+// dorm.drop('dropthis').then(data => {
+//   console.log(data)
+// });
 
 /* -------------------------------------------------------------------------- */
 /*                                COMPLEX QUERY                               */
