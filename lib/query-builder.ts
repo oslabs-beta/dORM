@@ -487,7 +487,6 @@ export class Dorm {
   /* ------------------------------- THEN METHOD ------------------------------ */
   async then(callback: Callback, fail: Callback = (rej) => rej) {
     this.finalErrorCheck();
-
     if (this.error.id) {
       this.setErrorMessage();
       const { message } = this.error;
