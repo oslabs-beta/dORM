@@ -6,6 +6,7 @@ export function template(this: Dorm, arg: string): string {
       INSERT: `INSERT INTO ${this.info.action.table} (${this.info.action.columns}) VALUES ${this.info.action.valuesParam}`,
       SELECT: `SELECT ${this.info.action.columns} FROM ${this.info.action.table}`,
       UPDATE: `UPDATE ${this.info.action.table} SET ${this.info.action.columns}`,
+      UPDATEALL: `UPDATE ${this.info.action.table} SET ${this.info.action.columns}`,
       DELETE: `DELETE FROM ${this.info.action.table}`,
       DELETEALL: `DELETE FROM ${this.info.action.table}`,
       DROP: `DROP TABLE ${this.info.action.table}`,
@@ -14,5 +15,6 @@ export function template(this: Dorm, arg: string): string {
       WHERE: ` WHERE ${this.info.filter.condition}`,
       RETURNING: ` RETURNING ${this.info.returning.columns}`,
     }[arg] ?? ''
-  );
-}
+    );
+  }
+  
