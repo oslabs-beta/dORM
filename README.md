@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Website cv.lbesson.qc.to](https://img.shields.io/website-up-down-green-red/http/cv.lbesson.qc.to.svg)](http://cv.lbesson.qc.to/) [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 # What is **dORM**?
 
-**dORM** is an uber-lightweight SQL query builder for postgresQL and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
+**dORM** is an uber-lightweight postgreSQL query builder for Deno and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
 
 You can chain our methods together, use `.then()` at the end of the query methods or simply await the results; you can even take advantage of Deno’s top-level await. dORM is promise-based and makes async database queries a breeze. It also handles creating the connection to the database server, using deno-postgres under the hood.
 
