@@ -21,7 +21,7 @@ This guide will cover the basics of getting started with **dORM**. Later on we w
 
 **dORM** can create an _.env_ file for you to securely hold your postgres connection string. From anywhere in your project folder, you can execute this in your terminal:
 
-- `$deno run --allow-read --allow-write --allow-net --unstable deno.land/x/dorm/models/init.ts`
+- `$deno run --allow-read --allow-write --allow-net --unstable https://deno.land/x/dorm/models/init.ts`
 
 - This will create _.env_ file in your project’s root directory.
 - In your project, import the **dORM** query builder with:
@@ -29,7 +29,7 @@ This guide will cover the basics of getting started with **dORM**. Later on we w
   - Instantiate the Dorm class:
 
 ```javascript
-import { Dorm } from `deno.land/x/dorm/mod.ts`;
+import { Dorm } from `https://deno.land/x/dorm/mod.ts`;
 import { config } from 'https://deno.land/x/dotenv/mod.ts';
 const env = config();
 const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}:PORTNUMBER/${env.USERNAME}`;
