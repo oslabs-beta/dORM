@@ -1,12 +1,12 @@
 # What is **dORM**?
 
-**dORM** is an uber-lightweight SQL query builder for postgresQL and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in Deno, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
+**dORM** is an uber-lightweight SQL query builder for postgresQL and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. **dORM** runs in Deno, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
 
-You can chain our methods together, use `.then()` at the end of the query methods or simply await the results; you can even take advantage of Deno’s top-level await. dORM is promise-based and makes async database queries a breeze. It also handles creating the connection to the database server, using deno-postgres under the hood.
+You can chain our methods together, use `.then()` at the end of the query methods or simply await the results; you can even take advantage of Deno’s top-level await. **dORM** is promise-based and makes async database queries a breeze. It also handles creating the connection to the database server, using deno-postgres under the hood.
 
 # Quick Start up guide
 
-This guide will cover the basics of getting started with dORM. Later on we will explore some of dORM’S newest features related to object-relational mapping, but first let’s dive into some essential CRUD functionality with dORM’s query builder.
+This guide will cover the basics of getting started with **dORM**. Later on we will explore some of **dORM**’S newest features related to object-relational mapping, but first let’s dive into some essential CRUD functionality with **dORM**’s query builder.
 
 ## Query Builder
 
@@ -20,7 +20,7 @@ This guide will cover the basics of getting started with dORM. Later on we will 
 
 - This will create .env file in your project’s root directory.
 
-- In your project, import the dORM query builder with:
+- In your project, import the **dORM**query builder with:
 
 - If using a .env file, you can use config like so:
 - Instantiate the Dorm class:
@@ -56,7 +56,7 @@ const inserted = await dorm
   .catch((e: any) => e);
 ```
 
-dORM simplifies the process of inserting multiple values into multiple columns of a table. If you only have a single object, you can pass that in without putting it inside an array.<br>
+**dORM** simplifies the process of inserting multiple values into multiple columns of a table. If you only have a single object, you can pass that in without putting it inside an array.<br>
 `.returning()` with no arguments will function as returning all.
 <br>
 To use top level await use try catch block:
@@ -83,7 +83,7 @@ console.log(e);
 
 ### SELECT method
 
-.where() takes as an argument a string that defines a condition. Conditions can contain logical operators such as AND/OR. Currently, a value in a .where() string can be a string(wrapped in single quotes), a number, null, or boolean. Double-quotes cannot be used inside a single-quoted string value, and neither single nor double quotes can be used anywhere else inside the condition string. Unicode tokens (\u….) currently cannot be used anywhere in the condition string.
+.where() takes as an argument a string that defines a condition. Conditions can contain logical operators such as `AND/OR`. Currently, a value in a .where() string can be a string(wrapped in single quotes), a number, null, or boolean. Double-quotes cannot be used inside a single-quoted string value, and neither single nor double quotes can be used anywhere else inside the condition string. Unicode tokens (\u….) currently cannot be used anywhere in the condition string.
 
 ```javascript
 await dorm
@@ -137,7 +137,7 @@ await dorm
 
 ### DELETE method
 
-Similar to `.update()` and `.updateAll()`, dORM has `.delete()` and `.deleteAll()`. The `.delete()` method requires a `.where()` clause, `.deleteAll()` does not. And as an extra safeguard, if you do include a `.where()` with `.deleteAll()`, dORM will throw an error because it can read your mind and it knows you didn’t intend to do that.
+Similar to `.update()` and `.updateAll()`, **dORM** has `.delete()` and `.deleteAll()`. The `.delete()` method requires a `.where()` clause, `.deleteAll()` does not. And as an extra safeguard, if you do include a `.where()` with `.deleteAll()`, **dORM** will throw an error because it can read your mind and it knows you didn’t intend to do that.
 
 ```javascript
 await dorm
@@ -188,7 +188,7 @@ await dorm
   .on('people_in_films.film_id = films._id');
 ```
 
-`.on()` takes a string argument that defines a condition for the `.join()`. Although it’s probably most common to put the `.on()` directly after the `.join()` it refers to, dORM allows you considerable leeway here. As long as the number of `.on()` methods equals the number of `.join()` methods, dORM is happy. It will pair them up in the order they appear, ie. the first on with the first join, second on with second join, etc.
+`.on()` takes a string argument that defines a condition for the `.join()`. Although it’s probably most common to put the `.on()` directly after the `.join()` it refers to, **dORM** allows you considerable leeway here. As long as the number of `.on()` methods equals the number of `.join()` methods, **dORM** is happy. It will pair them up in the order they appear, ie. the first on with the first join, second on with second join, etc.
 
 ### **_Parameterized queries_**
 
