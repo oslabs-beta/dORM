@@ -1,14 +1,15 @@
 ![image](https://user-images.githubusercontent.com/16947485/114826955-194c0600-9d96-11eb-8db0-87b67944a365.png)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Website cv.lbesson.qc.to](https://img.shields.io/website-up-down-green-red/http/cv.lbesson.qc.to.svg)](https://dorm.land/) [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/whyWhyDev)
+
 # What is **dORM**?
 
-**dORM** is an uber-lightweight postgreSQL query builder for Deno and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
+**dORM** is an uber-lightweight postgreSQL query builder for Deno and is currently being expanded into a full-fledged object-relational mapping _(ORM)_ tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
 
-You can chain our methods together, use `.then()` at the end of the query methods or simply await the results; you can even take advantage of Deno’s top-level await. dORM is promise-based and makes async database queries a breeze. It also handles creating the connection to the database server, using deno-postgres under the hood.
+You can chain our methods together, use `.then()` at the end of the query methods or simply await the results; you can even take advantage of Deno’s top-level await. **dORM** is promise-based and makes async database queries a breeze. It also handles creating the connection to the database server, using deno-postgres under the hood.
 
 # Quick Start up guide
 
-This guide will cover the basics of getting started with dORM. Later on we will explore some of dORM’S newest features related to object-relational mapping, but first let’s dive into some essential CRUD functionality with dORM’s query builder.
+This guide will cover the basics of getting started with **dORM**. Later on we will explore some of **dORM**’S newest features related to object-relational mapping, but first let’s dive into some essential CRUD functionality with **dORM**’s query builder.
 
 ## Query Builder
 
@@ -16,16 +17,14 @@ This guide will cover the basics of getting started with dORM. Later on we will 
 
 ### Securely connecting to the database using .env file _(**RECOMMENDED**)_
 
-**dORM** can create an .env file for you to securely hold your postgres connection string. From anywhere in your project folder, you can execute this in your terminal:
+**dORM** can create an _.env_ file for you to securely hold your postgres connection string. From anywhere in your project folder, you can execute this in your terminal:
 
 - `$deno run --allow-read --allow-write --allow-net --unstable deno.land/x/dorm/models/init.ts`
 
-- This will create .env file in your project’s root directory.
-
-- In your project, import the dORM query builder with:
-
-- If using a .env file, you can use config like so:
-- Instantiate the Dorm class:
+- This will create _.env_ file in your project’s root directory.
+- In your project, import the **dORM** query builder with:
+  - If you are using a _.env_ file, you can use config like so:
+  - Instantiate the Dorm class:
 
 ```javascript
 import { Dorm } from `deno.land/x/dorm/mod.ts`;
@@ -58,7 +57,7 @@ const inserted = await dorm
   .catch((e: any) => e);
 ```
 
-dORM simplifies the process of inserting multiple values into multiple columns of a table. If you only have a single object, you can pass that in without putting it inside an array.<br>
+**dORM** simplifies the process of inserting multiple values into multiple columns of a table. If you only have a single object, you can pass that in without putting it inside an array.<br>
 `.returning()` with no arguments will function as returning all.
 <br>
 To use top level await use try catch block:
@@ -81,11 +80,12 @@ try {
 }
 catch(e:any) {
 console.log(e);
+}
 ```
 
 ### SELECT method
 
-.where() takes as an argument a string that defines a condition. Conditions can contain logical operators such as AND/OR. Currently, a value in a .where() string can be a string(wrapped in single quotes), a number, null, or boolean. Double-quotes cannot be used inside a single-quoted string value, and neither single nor double quotes can be used anywhere else inside the condition string. Unicode tokens (\u….) currently cannot be used anywhere in the condition string.
+`.where()` takes as an argument a string that defines a condition. Conditions can contain logical operators such as `AND/OR`. Currently, a value in a `.where()` string can be a string*(wrapped in single quotes)*, a number, null, or boolean. Double-quotes cannot be used inside a single-quoted string value, and neither single nor double quotes can be used anywhere else inside the condition string. Unicode tokens _(\uxxxx.)_ currently cannot be used anywhere in the condition string.
 
 ```javascript
 await dorm
@@ -100,10 +100,10 @@ await dorm
   });
 ```
 
-If you want to use single quotes inside your single-quoted string value, use two single-quotes in a row (using backslashes to escape) and be sure to use double-quotes around your `.where()` argument.
+If you want to use single quotes inside your single-quoted string value, use two single-quotes in a row _(using backslashes to escape)_ and be sure to use double-quotes around your `.where()` argument.
 
 ```javascript
-.where("name = 'Jack \'\'Killer\'\' Chen' ")
+.where("name = 'Jack \'\'Killer\'\' Chen' ");
 ```
 
 ### UPDATE method
@@ -139,7 +139,7 @@ await dorm
 
 ### DELETE method
 
-Similar to `.update()` and `.updateAll()`, dORM has `.delete()` and `.deleteAll()`. The `.delete()` method requires a `.where()` clause, `.deleteAll()` does not. And as an extra safeguard, if you do include a `.where()` with `.deleteAll()`, dORM will throw an error because it can read your mind and it knows you didn’t intend to do that.
+Similar to `.update()` and `.updateAll()`, **dORM** has `.delete()` and `.deleteAll()`. The `.delete()` method requires a `.where()` clause, `.deleteAll()` does not. And as an extra safeguard, if you do include a `.where()` with `.deleteAll()`, **dORM** will throw an error because it can read your mind and it knows you didn’t intend to do that.
 
 ```javascript
 await dorm
@@ -164,7 +164,7 @@ await dorm
   .then((data: any) => {
     return data.rows;
   })
-  .catch((e) => e);
+  .catch((e: any) => e);
 ```
 
 ### JOIN method
@@ -190,7 +190,7 @@ await dorm
   .on('people_in_films.film_id = films._id');
 ```
 
-`.on()` takes a string argument that defines a condition for the `.join()`. Although it’s probably most common to put the `.on()` directly after the `.join()` it refers to, dORM allows you considerable leeway here. As long as the number of `.on()` methods equals the number of `.join()` methods, dORM is happy. It will pair them up in the order they appear, ie. the first on with the first join, second on with second join, etc.
+`.on()` takes a string argument that defines a condition for the `.join()`. Although it’s probably most common to put the `.on()` directly after the `.join()` it refers to, **dORM** allows you considerable leeway here. As long as the number of `.on()` methods equals the number of `.join()` methods, **dORM** is happy. It will pair them up in the order they appear, ie. the first on with the first join, second on with second join, etc.
 
 ### **_Parameterized queries_**
 
@@ -204,7 +204,7 @@ const test = dorm
   .table('userprofile')
   .toObj()
 
-//sent to database server -->
+//expected output-->
 {
   text: "INSERT INTO userprofile (username, password, email) VALUES ($1, $2, $3)",
   values: [
@@ -236,4 +236,41 @@ values: [1]
 };
 ```
 
+### RAW
+
+Sometimes you just can’t or don’t want to use our chainable methods to access your database. We get it. For those funky queries that our methods don’t quite _(yet)_ cover, we give you the `dorm.raw()` method. Pass in your query string and we will make the connection for you and send it off to the db server as-is. If you’ve parameterized your values—and of course you have!—you can pass your ordered values array as a second argument to `.raw()` and we’ll send that along too. This method also has aliases: `.rawr()` and `.rawrr()`, of course.
+
+```javascript
+const values = [1, 'Bob'];
+const results = await dorm.raw(
+  'SELECT * FROM people WHERE id = $1 OR name = $2',
+  values
+);
+```
+
 ## ORM (**O**bject-**R**elational **M**apping)
+
+### MODEL INSTANCES
+
+**dORM** can create model instances from your database. Run this in your command line terminal:
+
+```javascript
+$deno run --allow-read --allow-write --allow-net --unstable deno.land/x/dorm/models/init.ts
+```
+
+This will create a _.env_ file for you in your app root directory and create place holder for database url. If the _.env_ file is already created, it will be appendeded.
+
+```javascript
+dorm_databaseURL =
+  'postgresql://USERNAME:PASSWORD@localhost:5432/DATABASENAME?schema=public';
+```
+
+Replace `USERNAME`, `PASSWORD ` and `DATABASENAME` with your database information.
+
+After the _.env_ file was created, execute the following command to get all the relations from your database*(you will also see this instruction in *.env* file)*:
+
+```javascript
+$deno run --allow-read --allow-write --allow-net --unstable deno.land/x/dorm/models/model-generator.ts
+```
+
+This will create a dorm folder containing all of your table relations as model instance files.
