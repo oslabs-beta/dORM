@@ -1,3 +1,5 @@
+![Untitled-Artwork](https://user-images.githubusercontent.com/16947485/114826828-f883b080-9d95-11eb-9510-864f67846d70.png)
+
 # What is **dORM**?
 
 **dORM** is an uber-lightweight SQL query builder for postgresQL and is currently being expanded into a full-fledged object-relational mapping (ORM) tool. Its purpose is to make your life easier when making SQL queries and let you write queries in familiar Javascript/Typescript syntax and dot notation. dORM runs in Deno, a secure runtime environment which supports Typescript out of the box and offers cloud-based package management among other great features.
