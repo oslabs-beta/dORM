@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/16947485/114826955-194c0600-9d96-11eb-8db0-87b67944a365.png) [![GitHub release](https://img.shields.io/github/release/Naereen/StrapDown.js.svg)](https://github.com/oslabs-beta/dORM/releases)
+![image](https://user-images.githubusercontent.com/16947485/114826955-194c0600-9d96-11eb-8db0-87b67944a365.png)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Website cv.lbesson.qc.to](https://img.shields.io/website-up-down-green-red/http/cv.lbesson.qc.to.svg)](http://cv.lbesson.qc.to/) [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://GitHub.com/Naereen/ama)
 # What is **dORM**?
 
