@@ -1,5 +1,5 @@
 ![image](https://user-images.githubusercontent.com/16947485/114826955-194c0600-9d96-11eb-8db0-87b67944a365.png)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Website cv.lbesson.qc.to](https://img.shields.io/website-up-down-green-red/http/cv.lbesson.qc.to.svg)](https://dorm.land/) [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/whyWhyDev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Ask Me Anything !](https://img.shields.io/badge/Ask%20me-anything-1abc9c.svg)](https://github.com/whyWhyDev)
 
 This is our link to documentation website: https://dorm.land/
 
