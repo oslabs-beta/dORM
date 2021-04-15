@@ -8,7 +8,7 @@ const url = env.dorm_databaseURL;
 
 poolConnect(url);
 
-const modelQuery = Deno.readTextFileSync('models/relationships.sql');
+const modelQuery = Deno.readTextFileSync('https://deno.land/x/dorm@v1.0.0-beta.4/models/relationships.sql');
 
 const informationSchema = await query(modelQuery);
 
