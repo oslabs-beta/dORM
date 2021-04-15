@@ -26,7 +26,7 @@ var updateId = 2;
 /* -------------------------------------------------------------------------- */
 
 
-const initialSetup1 = dorm
+const initialSetup1 = await dorm
 .insert([
   {
     'username':'Golden_Retreiver',
