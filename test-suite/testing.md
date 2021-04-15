@@ -7,9 +7,9 @@
 - [ ] please add your database url in the url in the file you want to run.
       _(will be updating this part after adding create table method.)_
 
-## Please creat an .env file and add the followings:
+## Please create an .env file and add the followings:
 
-You can get your username, passowrd and database_name from your database url as shown in the example:
+You can get your username, password and database_name from your database url as shown in the example:
 const URL = `postgres://${env.USERNAME}:${env.PASSWORD}@${env.SERVER}:5432/${env.USERNAME}`;
 `USERNAME = <username> PASSWORD = <password> SERVER = <database_name>`
 
