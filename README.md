@@ -1,4 +1,4 @@
-![Untitled-Artwork](https://user-images.githubusercontent.com/16947485/114826828-f883b080-9d95-11eb-9510-864f67846d70.png)
+![image](https://user-images.githubusercontent.com/16947485/114826955-194c0600-9d96-11eb-8db0-87b67944a365.png)
 
 # What is **dORM**?
 
