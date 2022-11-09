@@ -2,31 +2,38 @@ import { query, poolConnect } from './db-connectors/pg-connector.ts';
 import { template } from './sql-template.ts';
 import { validate } from './validate-strings.ts';
 
-/* ----------------------------- TYPE INTERFACE ----------------------------- */
-interface Info {
-  action: {
-    type: null | string;
-    table: null | string;
-    columns: null | string | string[];
-    values: unknown[];
-    valuesParam: string;
-  };
-  join: Joins[];
-  filter: {
-    where: boolean;
-    condition?: any;
-  };
-  returning: {
-    active: boolean;
-    columns: string | string[];
-  };
+interface Action {
+  type: null | string;
+  table: null | string;
+  columns: null | string | string[];
+  values: unknown[];
+  valuesParam: string;
 }
 
-interface Joins {
+interface Filter  {
+  where: boolean;
+  condition?: any;
+}
+
+interface Returning {
+  active: boolean;
+  columns: string | string[];
+};
+
+interface Join {
   type?: string;
   table?: string;
   on?: any;
 }
+
+
+interface Info {
+  action: Action;
+  join: Join[];
+  filter: Filter;
+  returning: Returning
+}
+
 
 interface Callback {
   (key: unknown): unknown;
@@ -37,15 +44,15 @@ interface Error {
   message: string;
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                 DORM CLASS                                 */
-/* -------------------------------------------------------------------------- */
+/**
+ * @param url 
+ */
 export class Dorm {
   callOrder: string[];
   error: Error;
   info: Info;
   template: any;
-  constructor(url: string) {
+  constructor(private readonly url: string) {
     this.callOrder = [];
 
     this.error = {
@@ -71,11 +78,14 @@ export class Dorm {
         columns: '*',
       },
     };
-
+    //TODO: seperate out to start the pool connection 
     poolConnect(url);
     this.template = template.bind(this);
   }
-  /* ------------------------------ ERROR CHECKING ----------------------------- */
+  /**
+   * Check errors 
+   * @param group 
+   */
   checkErrors(group: number) {
     const errorObj = this.error;
     const error =
@@ -89,6 +99,7 @@ export class Dorm {
   }
 
   setErrorMessage() {
+    // TODO: use enum
     const msg: any = {
       1: 'No multiple actions',
       2: 'No multiple tables',
@@ -149,8 +160,11 @@ export class Dorm {
 
     return false;
   }
-
-  /* ------------------------------ INSERT METHOD ----------------------------- */
+  /**
+   * insert
+   * @param arg 
+   * @returns 
+   */
   insert(arg: any | unknown[]) {
     this.callOrder.push('INSERT');
 
@@ -638,3 +652,7 @@ export class Dorm {
   rawr = this.raw;
   rawrr = this.raw;
 }
+
+// TODO: cleanup each method
+// TODO: document each ones
+// TODO: re-structure if necessary
