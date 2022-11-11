@@ -5,7 +5,7 @@
     "plugin:@typescript-eslint/recommended"
   ],
   "root": true,
-  "plugins": ["react", "react-hooks", "@typescript-eslint"],
+  "plugins": [ "@typescript-eslint", ""],
   "rules": {
     "arrow-parens": [2, "as-needed"],
     "import/no-unresolved": "off",
