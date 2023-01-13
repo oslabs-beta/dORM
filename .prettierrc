@@ -1,4 +1,7 @@
 {
   "singleQuote": true,
-  "trailingComma": "es5"
+  "trailingComma": "all",
+  "printWidth": 80,
+  "proseWrap": "always",
+  "endOfLine": "auto"
 }

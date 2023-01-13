@@ -1,32 +1,42 @@
-import { query, poolConnect } from './db-connectors/pg-connector.ts';
-import { template } from './sql-template.ts';
-import { validate } from './validate-strings.ts';
+import { query, poolConnect } from './db-connectors/pg-connector';
+import { getTemplate } from './sql-template';
+import { validate } from './validate-strings';
 
-/* ----------------------------- TYPE INTERFACE ----------------------------- */
-interface Info {
-  action: {
-    type: null | string;
-    table: null | string;
-    columns: null | string | string[];
-    values: unknown[];
-    valuesParam: string;
-  };
-  join: Joins[];
-  filter: {
-    where: boolean;
-    condition?: any;
-  };
-  returning: {
-    active: boolean;
-    columns: string | string[];
-  };
+interface Action {
+  type: null | string;
+  table: null | string;
+  columns: null | string | string[];
+  values: unknown[];
+  valuesParam: string;
 }
 
-interface Joins {
+interface Filter  {
+  where: boolean;
+  condition?: unknown;
+}
+
+interface Returning {
+  active: boolean;
+  columns: string | string[];
+};
+interface JoinOn{
+  tokens: string[],
+  values: string[]
+}
+interface Join {
   type?: string;
   table?: string;
-  on?: any;
+  on?: JoinOn | string
 }
+
+
+interface Info {
+  action: Action;
+  join: Join[];
+  filter: Filter;
+  returning: Returning
+}
+
 
 interface Callback {
   (key: unknown): unknown;
@@ -36,60 +46,82 @@ interface Error {
   id: number;
   message: string;
 }
+enum Group {
+  Type,
+  Table,
+  Where,
+  Active,
+}
+interface PayLoad {
+  [x : string] : PayloadValue
+} 
+type PayloadValue = string | number | boolean | null | undefined | PayLoad 
 
-/* -------------------------------------------------------------------------- */
-/*                                 DORM CLASS                                 */
-/* -------------------------------------------------------------------------- */
+const defaultAction = {
+  type: null,
+  table: null,
+  columns: '*',
+  values: [],
+  valuesParam: '',
+}
+const defaultFilter = {
+  where: false,
+  condition: null,
+}
+
+const defaultReturning = {
+  active: false,
+  columns: '*',
+}
+
+/**
+ * @param url 
+ */
 export class Dorm {
-  callOrder: string[];
-  error: Error;
-  info: Info;
-  template: any;
-  constructor(url: string) {
-    this.callOrder = [];
-
-    this.error = {
-      id: 0,
-      message: '',
-    };
-
-    this.info = {
-      action: {
-        type: null,
-        table: null,
-        columns: '*',
-        values: [],
-        valuesParam: '',
-      },
-      join: [],
-      filter: {
-        where: false,
-        condition: null,
-      },
-      returning: {
-        active: false,
-        columns: '*',
-      },
-    };
-
-    poolConnect(url);
-    this.template = template.bind(this);
+  callOrder: string[] = []
+  error: Error = {
+    id: 0,
+    message: '',
+  };
+  info: Info = {
+    action: defaultAction,
+    join: [],
+    filter: defaultFilter,
+    returning: defaultReturning,
   }
-  /* ------------------------------ ERROR CHECKING ----------------------------- */
-  checkErrors(group: number) {
+  template: typeof getTemplate  = getTemplate
+  constructor(private readonly url: string) {
+
+    //TODO: seperate out to start the pool connection 
+    this.template = getTemplate.bind(this);
+  }
+  async start() {
+    await poolConnect(this.url)
+  }
+  /**
+   * Check errors 
+   * @param group 
+   */
+  private checkErrors(group: Group) {
     const errorObj = this.error;
-    const error =
-      (group === 1 && !!this.info.action.type) ||
-      (group === 2 && !!this.info.action.table) ||
-      (group === 3 && !!this.info.filter.where) ||
-      (group === 4 && !!this.info.returning.active);
+    /*
+
+      
+      }
+    */ 
+    const error = 
+      (Group.Type && !!this.info.action.type) ||
+      (Group.Table && !!this.info.action.table) ||
+      (Group.Where && !!this.info.filter.where) ||
+      (Group.Active && !!this.info.returning.active);
 
     if (error) errorObj.id = group;
     return error;
   }
 
   setErrorMessage() {
-    const msg: any = {
+    // TODO: use enum
+    const message: Record<string,string> = {
       1: 'No multiple actions',
       2: 'No multiple tables',
       3: 'No multiple wheres',
@@ -107,7 +139,7 @@ export class Dorm {
       98: 'Invalid tables (cannot contain quotes)',
       99: 'Invalid columns (cannot contain quotes)',
     };
-    this.error.message = msg[this.error.id];
+    this.error.message = message[this.error.id];
   }
 
   finalErrorCheck() {
@@ -149,9 +181,12 @@ export class Dorm {
 
     return false;
   }
-
-  /* ------------------------------ INSERT METHOD ----------------------------- */
-  insert(arg: any | unknown[]) {
+  /**
+   * insert
+   * @param arg 
+   * @returns 
+   */
+  insert(arg: PayLoad | PayLoad[]) {
     this.callOrder.push('INSERT');
 
     if (typeof arg !== 'object') {
@@ -166,13 +201,13 @@ export class Dorm {
       }
     }
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     this.info.action.type = 'INSERT';
 
     const columns: string[] = [];
 
-    const values: unknown[] = [];
+    const values: PayloadValue[][] = [];
 
     if (!Array.isArray(arg)) {
       if (!Object.keys(arg).length) {
@@ -182,15 +217,12 @@ export class Dorm {
       const [column, value] = Object.entries(arg)[0];
 
       columns.push(column);
-      const val: any = [];
-      if (value === undefined) {
-        val.push(null);
-      } else {
+      const val: PayloadValue[] = [];
+
         val.push(value);
-      }
       values.push(val);
     } else {
-      arg.forEach((obj: any) => {
+      arg.forEach((obj: PayLoad) => {
         if (!Object.keys(obj).length) {
           this.error.id = 8;
           return this;
@@ -205,13 +237,13 @@ export class Dorm {
         return this;
       }
 
-      arg.forEach((obj: any) => {
-        const vals: any = [];
+      arg.forEach((obj: PayLoad) => {
+        const vals: PayloadValue[] = [];
         columns.forEach((col) => {
           if (obj[col] === undefined) {
             vals.push(null);
           } else {
-            arg.forEach((obj: any) => {
+            arg.forEach((obj: PayLoad) => {
               if (!Object.keys(obj).length) {
                 this.error.id = 8;
                 return this;
@@ -226,8 +258,8 @@ export class Dorm {
               return this;
             }
 
-            arg.forEach((obj: any) => {
-              const vals: any = [];
+            arg.forEach((obj: PayLoad) => {
+              const vals: PayloadValue[] = [];
               columns.forEach((col) => {
                 if (obj[col] === undefined) {
                   vals.push(null);
@@ -248,14 +280,14 @@ export class Dorm {
     // create parameter strings
     this.info.action.values = values.flat();
     let paramCount = 0;
-    const valuesBound = values.map((el: any) =>
-      el.map((ele: any) => {
+    const valuesBound = values.map((el: unknown[]) =>
+      el.map(() => {
         paramCount++;
         return `$${paramCount}`;
       })
     );
 
-    valuesBound.forEach((data: any, index: number) => {
+    valuesBound.forEach((data: unknown[], index: number) => {
       const tail = index === valuesBound.length - 1 ? '' : ', ';
       this.info.action.valuesParam += `(${data.join(', ')})${tail}`;
     });
@@ -267,7 +299,7 @@ export class Dorm {
   select(arg?: string) {
     this.callOrder.push('SELECT');
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     this.info.action.type = 'SELECT';
     if (arg) this.info.action.columns = arg;
@@ -276,10 +308,10 @@ export class Dorm {
   }
 
   /* ------------------------------ UPDATE METHOD ----------------------------- */
-  update(obj: any) {
+  update(obj: PayLoad | PayLoad[]) {
     this.callOrder.push('UPDATE');
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     if (!Object.keys(obj).length || Array.isArray(obj)) {
       this.error.id = 8;
@@ -309,7 +341,7 @@ export class Dorm {
   delete(arg?: string) {
     this.callOrder.push('DELETE');
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     this.info.action.type = 'DELETE';
     if (arg) this.info.action.table = arg;
@@ -320,7 +352,7 @@ export class Dorm {
   deleteAll(arg?: string) {
     this.callOrder.push('DELETEALL');
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     this.info.action.type = 'DELETEALL';
     if (arg) this.info.action.table = arg;
@@ -332,7 +364,7 @@ export class Dorm {
   drop(arg?: string) {
     this.callOrder.push('DROP');
 
-    if (this.checkErrors(1)) return this;
+    if (this.checkErrors(Group.Type)) return this;
 
     this.info.action.type = 'DROP';
     if (arg) this.info.action.table = arg;
@@ -343,7 +375,7 @@ export class Dorm {
   table(arg: string) {
     this.callOrder.push('TABLE');
 
-    if (this.checkErrors(2)) return this;
+    if (this.checkErrors(Group.Table)) return this;
     this.info.action.table = arg;
     return this;
   }
@@ -451,7 +483,7 @@ export class Dorm {
   where(arg: string) {
     this.callOrder.push('WHERE');
 
-    if (this.checkErrors(3)) return this;
+    if (this.checkErrors(Group.Where)) return this;
 
     const validated = validate.onWhere(arg);
 
@@ -470,7 +502,7 @@ export class Dorm {
   returning(arg?: string) {
     this.callOrder.push('RETURNING');
 
-    if (this.checkErrors(4)) return this;
+    if (this.checkErrors(Group.Active)) return this;
 
     this.info.returning.active = true;
     if (arg) this.info.returning.columns = arg;
@@ -528,7 +560,7 @@ export class Dorm {
       return await fail(Promise.reject(message));
     }
 
-    let result: any;
+    let result: Promise<void>;
     try {
       const params = this.info.action.values;
       result = await query(this.toString(), params);
@@ -550,7 +582,7 @@ export class Dorm {
     }
 
     // thanks to David Walsh at https://davidwalsh.name/detect-native-function
-    function isNative(fn: any) {
+    function isNative<T = string>(fn: T) {
       return /\{\s*\[native code\]\s*\}/.test('' + fn);
     }
   }
@@ -568,7 +600,7 @@ export class Dorm {
 
     const action = this.info.action.type;
     const joinList = this.info.join;
-    const filter = this.info.filter.where;
+    // const filter = this.info.filter.where;
     const returning = this.info.returning.active;
 
     let queryTemplate = '';
@@ -581,7 +613,7 @@ export class Dorm {
         queryTemplate += this.template('JOIN');
 
         const params = validate.insertParams(
-          el.on.tokens,
+          el.on?.tokens,
           this.info.action.values.length + 1
         );
         this.info.action.values.push(...el.on.values);
@@ -638,3 +670,7 @@ export class Dorm {
   rawr = this.raw;
   rawrr = this.raw;
 }
+
+// TODO: cleanup each method
+// TODO: document each ones
+// TODO: re-structure if necessary

@@ -1,6 +1,6 @@
-import { Dorm } from '../lib/query-builder.ts';
-import { assertEquals, assertNotEquals } from '../deps.ts';
-import { config } from '../deps.ts';
+import { Dorm } from '../lib/query-builder';
+import { assertEquals, assertNotEquals } from '../deps';
+import { config } from '../deps';
 
 /*
  *@select

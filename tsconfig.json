@@ -1,0 +1,13 @@
+{
+  
+  "compilerOptions": {
+    "noUnusedLocals": true,
+    "strictNullChecks": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "target": "esnext",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "useDefineForClassFields": true
+  },
+}
